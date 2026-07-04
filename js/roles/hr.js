@@ -18,11 +18,11 @@ export function renderHRDashboard(panel, mk, m) {
   panel.innerHTML = dashBack() + `
     <div style="font-size:18px;font-weight:700;margin-bottom:16px;">📋 HR & Attendance Dashboard — ${escapeHtml(m.label)}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">
-      <div class="stat-card"><div class="stat-label">Active Employees</div><div class="stat-value">${emps.length}</div></div>
-      <div class="stat-card"><div class="stat-label">Resigned</div><div class="stat-value" style="color:var(--bad);">${resigned}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Leaves</div><div class="stat-value">${totalLeaves}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Late Marks</div><div class="stat-value" style="color:var(--amber);">${totalLate}</div></div>
-      <div class="stat-card"><div class="stat-label">Tobacco Consumers</div><div class="stat-value" style="color:var(--bad);">${tobaccoYes}</div></div>
+      <div class="stat"><div class="label">Active Employees</div><div class="value">${emps.length}</div></div>
+      <div class="stat"><div class="label">Resigned</div><div class="value" style="color:var(--bad);">${resigned}</div></div>
+      <div class="stat"><div class="label">Total Leaves</div><div class="value">${totalLeaves}</div></div>
+      <div class="stat"><div class="label">Total Late Marks</div><div class="value" style="color:var(--amber);">${totalLate}</div></div>
+      <div class="stat"><div class="label">Tobacco Consumers</div><div class="value" style="color:var(--bad);">${tobaccoYes}</div></div>
     </div>
     <div class="card"><div class="table-scroll"><table>
       <thead><tr>

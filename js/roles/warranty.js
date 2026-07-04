@@ -31,9 +31,9 @@ export function renderWarrantyDashboard(panel, mk, m) {
   panel.innerHTML = dashBack() + `
     <div style="font-size:18px;font-weight:700;margin-bottom:16px;">🛡 Warranty Dashboard — ${escapeHtml(m.label)}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">
-      <div class="stat-card"><div class="stat-label">Warranty Staff</div><div class="stat-value">${wEmps.length}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Target</div><div class="stat-value" style="font-size:15px;">${fmt(rows.reduce((s,r)=>s+r.p.target,0))}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Achievement</div><div class="stat-value" style="font-size:15px;">${fmt(rows.reduce((s,r)=>s+r.p.achievement,0))}</div></div>
+      <div class="stat"><div class="label">Warranty Staff</div><div class="value">${wEmps.length}</div></div>
+      <div class="stat"><div class="label">Total Target</div><div class="value" style="font-size:15px;">${fmt(rows.reduce((s,r)=>s+r.p.target,0))}</div></div>
+      <div class="stat"><div class="label">Total Achievement</div><div class="value" style="font-size:15px;">${fmt(rows.reduce((s,r)=>s+r.p.achievement,0))}</div></div>
     </div>
     <div class="card"><div class="table-scroll"><table>
       <thead><tr><th>SR</th><th>Name</th><th>Designation</th><th>Target</th><th>Achievement</th><th>Achv %</th><th>Leaves</th><th>Late Marks</th><th>Incentive ₹</th></tr></thead>

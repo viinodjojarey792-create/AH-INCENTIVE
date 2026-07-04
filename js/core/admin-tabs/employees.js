@@ -186,9 +186,9 @@ export function renderHiriseMapTab() {
         <b>All names displayed in Title Case.</b>
       </p>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px;">
-        <div class="stat-card"><div class="stat-label">Total Mappings</div><div class="stat-value">${entries.length}</div></div>
-        <div class="stat-card"><div class="stat-label">Matched ✅</div><div class="stat-value" style="color:var(--good);">${matched}</div></div>
-        <div class="stat-card"><div class="stat-label">Unmatched ⚠</div><div class="stat-value" style="color:${unmatched>0?'var(--bad)':'var(--good)'};">${unmatched}</div></div>
+        <div class="stat"><div class="label">Total Mappings</div><div class="value">${entries.length}</div></div>
+        <div class="stat"><div class="label">Matched ✅</div><div class="value" style="color:var(--good);">${matched}</div></div>
+        <div class="stat"><div class="label">Unmatched ⚠</div><div class="value" style="color:${unmatched>0?'var(--bad)':'var(--good)'};">${unmatched}</div></div>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
         ${canEdit ? `

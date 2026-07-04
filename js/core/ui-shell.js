@@ -176,10 +176,10 @@ function renderSubDashboardHome(panel, mk, m) {
     </div>
     <!-- Quick Stats -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px;">
-      <div class="stat-card"><div class="stat-label">Active Employees</div><div class="stat-value">${activeEmps}</div></div>
-      <div class="stat-card"><div class="stat-label">Workshop Revenue</div><div class="stat-value" style="font-size:16px;">${fmt(bucket ? bucket.workshop.total : 0)}</div></div>
-      <div class="stat-card"><div class="stat-label">OTC Revenue</div><div class="stat-value" style="font-size:16px;">${fmt(otcTotal)}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Payout</div><div class="stat-value" style="font-size:16px;">${fmt(totalPayout)}</div></div>
+      <div class="stat"><div class="label">Active Employees</div><div class="value">${activeEmps}</div></div>
+      <div class="stat"><div class="label">Workshop Revenue</div><div class="value" style="font-size:16px;">${fmt(bucket ? bucket.workshop.total : 0)}</div></div>
+      <div class="stat"><div class="label">OTC Revenue</div><div class="value" style="font-size:16px;">${fmt(otcTotal)}</div></div>
+      <div class="stat"><div class="label">Total Payout</div><div class="value" style="font-size:16px;">${fmt(totalPayout)}</div></div>
     </div>
     <!-- Dashboard Cards Grid -->
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;">

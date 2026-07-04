@@ -23,9 +23,9 @@ export function renderSparePartsDashboard(panel, mk, m) {
   panel.innerHTML = dashBack() + `
     <div style="font-size:18px;font-weight:700;margin-bottom:16px;">🏪 Spare Parts Dashboard — ${escapeHtml(m.label)}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;">
-      <div class="stat-card"><div class="stat-label">OTC Revenue (Basic Price)</div><div class="stat-value" style="font-size:15px;">${fmt(otc.total||0)}</div></div>
-      <div class="stat-card"><div class="stat-label">OTC Invoices</div><div class="stat-value">${otc.count||0}</div></div>
-      <div class="stat-card"><div class="stat-label">Avg per Invoice</div><div class="stat-value" style="font-size:15px;">${fmt(otc.count > 0 ? Math.round((otc.total||0)/otc.count) : 0)}</div></div>
+      <div class="stat"><div class="label">OTC Revenue (Basic Price)</div><div class="value" style="font-size:15px;">${fmt(otc.total||0)}</div></div>
+      <div class="stat"><div class="label">OTC Invoices</div><div class="value">${otc.count||0}</div></div>
+      <div class="stat"><div class="label">Avg per Invoice</div><div class="value" style="font-size:15px;">${fmt(otc.count > 0 ? Math.round((otc.total||0)/otc.count) : 0)}</div></div>
     </div>
     <div class="card">
       <div class="card-head"><strong>Store Manager Performance</strong></div>

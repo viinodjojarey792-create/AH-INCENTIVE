@@ -33,9 +33,9 @@ export function renderSupervisorDashboard(panel, mk, m) {
   panel.innerHTML = dashBack() + `
     <div style="font-size:18px;font-weight:700;margin-bottom:16px;">👥 Floor Supervisor Dashboard — ${escapeHtml(m.label)}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">
-      <div class="stat-card"><div class="stat-label">Supervisors</div><div class="stat-value">${supervisors.length}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Team Target</div><div class="stat-value" style="font-size:15px;">${fmt(rows.reduce((s,r)=>s+r.p.target,0))}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Team Achievement</div><div class="stat-value" style="font-size:15px;">${fmt(rows.reduce((s,r)=>s+r.teamAch,0))}</div></div>
+      <div class="stat"><div class="label">Supervisors</div><div class="value">${supervisors.length}</div></div>
+      <div class="stat"><div class="label">Total Team Target</div><div class="value" style="font-size:15px;">${fmt(rows.reduce((s,r)=>s+r.p.target,0))}</div></div>
+      <div class="stat"><div class="label">Total Team Achievement</div><div class="value" style="font-size:15px;">${fmt(rows.reduce((s,r)=>s+r.teamAch,0))}</div></div>
     </div>
     ${rows.map(r => {
       const pct = r.p.target > 0 ? ((r.p.achievement/r.p.target)*100).toFixed(1) : '—';
@@ -46,10 +46,10 @@ export function renderSupervisorDashboard(panel, mk, m) {
           <span style="color:${col};font-weight:700;">${pct}% of target</span>
         </div>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">
-          <div class="stat-card"><div class="stat-label">Target</div><div class="stat-value" style="font-size:14px;">${fmt(r.p.target)}</div></div>
-          <div class="stat-card"><div class="stat-label">Achievement</div><div class="stat-value" style="font-size:14px;">${fmt(r.p.achievement)}</div></div>
-          <div class="stat-card"><div class="stat-label">Team Size</div><div class="stat-value">${r.team.length}</div></div>
-          <div class="stat-card"><div class="stat-label">Incentive Earned</div><div class="stat-value" style="font-size:14px;">${fmt(r.p.earned)}</div></div>
+          <div class="stat"><div class="label">Target</div><div class="value" style="font-size:14px;">${fmt(r.p.target)}</div></div>
+          <div class="stat"><div class="label">Achievement</div><div class="value" style="font-size:14px;">${fmt(r.p.achievement)}</div></div>
+          <div class="stat"><div class="label">Team Size</div><div class="value">${r.team.length}</div></div>
+          <div class="stat"><div class="label">Incentive Earned</div><div class="value" style="font-size:14px;">${fmt(r.p.earned)}</div></div>
         </div>
         <table style="width:100%;font-size:12px;border-collapse:collapse;">
           <thead><tr style="background:#f5f0e8;">

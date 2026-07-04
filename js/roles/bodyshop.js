@@ -109,10 +109,10 @@ export function renderBodyshopDashboard(panel, mk, m) {
 
     <!-- Dept Summary Stats -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;">
-      <div class="stat-card"><div class="stat-label">Bodyshop Staff</div><div class="stat-value">${bsEmps.length}</div></div>
-      <div class="stat-card"><div class="stat-label" title="LOP achievement without GST" style="cursor:help;border-bottom:1px dotted var(--ink-soft);">Dept Revenue</div><div class="stat-value" style="font-size:15px;">${fmt(deptRevenue)}</div></div>
-      <div class="stat-card"><div class="stat-label">Vehicles Done</div><div class="stat-value">${deptVehicles}</div></div>
-      <div class="stat-card"><div class="stat-label">Avg Rev / Vehicle</div><div class="stat-value" style="font-size:15px;">${deptVehicles>0?fmt(deptAvgRev):'—'}</div></div>
+      <div class="stat"><div class="label">Bodyshop Staff</div><div class="value">${bsEmps.length}</div></div>
+      <div class="stat"><div class="label" title="LOP achievement without GST" style="cursor:help;border-bottom:1px dotted var(--ink-soft);">Dept Revenue</div><div class="value" style="font-size:15px;">${fmt(deptRevenue)}</div></div>
+      <div class="stat"><div class="label">Vehicles Done</div><div class="value">${deptVehicles}</div></div>
+      <div class="stat"><div class="label">Avg Rev / Vehicle</div><div class="value" style="font-size:15px;">${deptVehicles>0?fmt(deptAvgRev):'—'}</div></div>
     </div>
 
     <!-- Incentive Rate Card -->

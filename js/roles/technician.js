@@ -34,13 +34,13 @@ export function renderTechnicianDashboard(panel, mk, m) {
   panel.innerHTML = dashBack() + `
     <div style="font-size:18px;font-weight:700;margin-bottom:16px;">🔧 Technician Dashboard — ${escapeHtml(m.label)}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">
-      <div class="stat-card"><div class="stat-label">Total Technicians</div><div class="stat-value">${techs.length}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Target</div><div class="stat-value" style="font-size:15px;">${fmt(rows.reduce((s,r)=>s+r.p.target,0))}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Achievement</div><div class="stat-value" style="font-size:15px;">${fmt(rows.reduce((s,r)=>s+r.p.achievement,0))}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Job Cards</div><div class="stat-value">${rows.reduce((s,r)=>s+r.jc.count,0)}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Behavioral ₹</div><div class="stat-value" style="font-size:14px;">${fmt(rows.reduce((s,r)=>s+(r.allRow?r.allRow.behavioral.total:0),0))}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Performance ₹</div><div class="stat-value" style="font-size:14px;">${fmt(rows.reduce((s,r)=>s+(r.p.earned||0),0))}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Incentive ₹</div><div class="stat-value" style="font-size:14px;color:var(--good);">${fmt(rows.reduce((s,r)=>s+(r.allRow?r.allRow.finalAmount:0),0))}</div></div>
+      <div class="stat"><div class="label">Total Technicians</div><div class="value">${techs.length}</div></div>
+      <div class="stat"><div class="label">Total Target</div><div class="value" style="font-size:15px;">${fmt(rows.reduce((s,r)=>s+r.p.target,0))}</div></div>
+      <div class="stat"><div class="label">Total Achievement</div><div class="value" style="font-size:15px;">${fmt(rows.reduce((s,r)=>s+r.p.achievement,0))}</div></div>
+      <div class="stat"><div class="label">Total Job Cards</div><div class="value">${rows.reduce((s,r)=>s+r.jc.count,0)}</div></div>
+      <div class="stat"><div class="label">Total Behavioral ₹</div><div class="value" style="font-size:14px;">${fmt(rows.reduce((s,r)=>s+(r.allRow?r.allRow.behavioral.total:0),0))}</div></div>
+      <div class="stat"><div class="label">Total Performance ₹</div><div class="value" style="font-size:14px;">${fmt(rows.reduce((s,r)=>s+(r.p.earned||0),0))}</div></div>
+      <div class="stat"><div class="label">Total Incentive ₹</div><div class="value" style="font-size:14px;color:var(--good);">${fmt(rows.reduce((s,r)=>s+(r.allRow?r.allRow.finalAmount:0),0))}</div></div>
     </div>
     ${rows.every(r => !r.p.pct) ? `<div class="banner"><span>⚠</span><div><b>Incentive % not set for any technician in ${escapeHtml(m.label)}.</b> Go to <b>Incentive Rates</b> tab → set the % for each technician → performance incentive will calculate automatically.</div></div>` : ''}
     <div class="card"><div class="table-scroll"><table>

@@ -186,9 +186,9 @@ export function renderCREDashboard(panel, mk, m) {
   panel.innerHTML = dashBack() + `
     <div style="font-size:18px;font-weight:700;margin-bottom:16px;">📞 CRE Dashboard — ${escapeHtml(m.label)}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">
-      <div class="stat-card"><div class="stat-label">CRE Staff</div><div class="stat-value">${cres.length}</div></div>
-      <div class="stat-card"><div class="stat-label">HMSI Complaints</div><div class="stat-value">${Object.values(complaints).reduce((s,c)=>s+(c.count||0),0)}</div></div>
-      <div class="stat-card"><div class="stat-label">Employees with Complaints</div><div class="stat-value">${Object.keys(complaints).length}</div></div>
+      <div class="stat"><div class="label">CRE Staff</div><div class="value">${cres.length}</div></div>
+      <div class="stat"><div class="label">HMSI Complaints</div><div class="value">${Object.values(complaints).reduce((s,c)=>s+(c.count||0),0)}</div></div>
+      <div class="stat"><div class="label">Employees with Complaints</div><div class="value">${Object.keys(complaints).length}</div></div>
     </div>
     <div class="card">
       <div class="card-head"><strong>CRE Staff — Behavioral Incentive</strong></div>
@@ -220,9 +220,9 @@ export function renderCRMDashboard(panel, mk, m) {
   panel.innerHTML = dashBack() + `
     <div style="font-size:18px;font-weight:700;margin-bottom:16px;">🤝 CRM Dashboard — ${escapeHtml(m.label)}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">
-      <div class="stat-card"><div class="stat-label">Total Customers (DB)</div><div class="stat-value">${customers.length}</div></div>
-      <div class="stat-card"><div class="stat-label">Serviced This Month</div><div class="stat-value">${recentCusts.length}</div></div>
-      <div class="stat-card"><div class="stat-label">HMSI Complaints</div><div class="stat-value">${Object.values(m.complaints||{}).reduce((s,c)=>s+(c.count||0),0)}</div></div>
+      <div class="stat"><div class="label">Total Customers (DB)</div><div class="value">${customers.length}</div></div>
+      <div class="stat"><div class="label">Serviced This Month</div><div class="value">${recentCusts.length}</div></div>
+      <div class="stat"><div class="label">HMSI Complaints</div><div class="value">${Object.values(m.complaints||{}).reduce((s,c)=>s+(c.count||0),0)}</div></div>
     </div>
     <div class="card">
       <div class="card-head"><strong>Recent Customers — ${escapeHtml(m.label)}</strong></div>

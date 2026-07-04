@@ -42,27 +42,27 @@ export function renderServiceManagerDashboard(panel, mk, m) {
     <div class="card" style="margin-bottom:16px;">
       <div class="card-head"><strong>Workshop KPIs</strong></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
-        <div class="stat-card"><div class="stat-label"${svMgrTargetNote?` title="${escapeHtml(svMgrTargetNote)}" style="cursor:help;border-bottom:1px dotted var(--ink-soft);"`:''}>Target</div><div class="stat-value" style="font-size:15px;">${fmt(svMgrTarget)}</div></div>
-        <div class="stat-card"><div class="stat-label">Job Card Revenue</div><div class="stat-value" style="font-size:15px;">${fmt(jcTotal)}</div></div>
-        <div class="stat-card"><div class="stat-label">OTC Revenue</div><div class="stat-value" style="font-size:15px;">${fmt(otc.total||0)}</div></div>
-        <div class="stat-card"><div class="stat-label" title="LOP achievement without GST" style="cursor:help;border-bottom:1px dotted var(--ink-soft);">Total Revenue</div><div class="stat-value" style="font-size:15px;color:var(--good);">${fmt(grandTotal)}</div></div>
-        <div class="stat-card"><div class="stat-label">Achv %</div><div class="stat-value" style="font-size:15px;color:${svMgrTarget>0?(grandTotal/svMgrTarget*100>=100?'var(--good)':grandTotal/svMgrTarget*100>=80?'var(--amber)':'var(--bad)'):'var(--ink)'};">${svMgrTarget>0?((grandTotal/svMgrTarget)*100).toFixed(1)+'%':'—'}</div></div>
-        <div class="stat-card"><div class="stat-label">Job Cards Closed</div><div class="stat-value">${bucket ? bucket.workshop.count : 0}</div></div>
-        <div class="stat-card"><div class="stat-label">OTC Invoices</div><div class="stat-value">${otc.count||0}</div></div>
-        <div class="stat-card"><div class="stat-label">Total Payout</div><div class="stat-value" style="font-size:14px;">${fmt(allRows.reduce((s,r)=>s+r.finalAmount,0))}</div></div>
+        <div class="stat" style="text-align:center;"><div class="label"${svMgrTargetNote?` title="${escapeHtml(svMgrTargetNote)}" style="cursor:help;border-bottom:1px dotted var(--ink-soft);"`:''}>Target</div><div class="value" style="font-size:15px;">${fmt(svMgrTarget)}</div></div>
+        <div class="stat" style="text-align:center;"><div class="label">Job Card Revenue</div><div class="value" style="font-size:15px;">${fmt(jcTotal)}</div></div>
+        <div class="stat" style="text-align:center;"><div class="label">OTC Revenue</div><div class="value" style="font-size:15px;">${fmt(otc.total||0)}</div></div>
+        <div class="stat" style="text-align:center;"><div class="label" title="LOP achievement without GST" style="cursor:help;border-bottom:1px dotted var(--ink-soft);">Total Revenue</div><div class="value" style="font-size:15px;color:var(--good);">${fmt(grandTotal)}</div></div>
+        <div class="stat" style="text-align:center;"><div class="label">Achv %</div><div class="value" style="font-size:15px;color:${svMgrTarget>0?(grandTotal/svMgrTarget*100>=100?'var(--good)':grandTotal/svMgrTarget*100>=80?'var(--amber)':'var(--bad)'):'var(--ink)'};">${svMgrTarget>0?((grandTotal/svMgrTarget)*100).toFixed(1)+'%':'—'}</div></div>
+        <div class="stat" style="text-align:center;"><div class="label">Job Cards Closed</div><div class="value">${bucket ? bucket.workshop.count : 0}</div></div>
+        <div class="stat" style="text-align:center;"><div class="label">OTC Invoices</div><div class="value">${otc.count||0}</div></div>
+        <div class="stat" style="text-align:center;"><div class="label">Total Payout</div><div class="value" style="font-size:14px;">${fmt(allRows.reduce((s,r)=>s+r.finalAmount,0))}</div></div>
       </div>
     </div>
     <!-- Team Headcount -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px;">
-      <div class="stat-card"><div class="stat-label">Technicians</div><div class="stat-value">${techCount}</div></div>
-      <div class="stat-card"><div class="stat-label">Advisors</div><div class="stat-value">${advCount}</div></div>
-      <div class="stat-card"><div class="stat-label">Supervisors</div><div class="stat-value">${supvCount}</div></div>
+      <div class="stat"><div class="label">Technicians</div><div class="value">${techCount}</div></div>
+      <div class="stat"><div class="label">Advisors</div><div class="value">${advCount}</div></div>
+      <div class="stat"><div class="label">Supervisors</div><div class="value">${supvCount}</div></div>
     </div>
     <!-- Service Manager own row -->
     <div class="card">
       <div class="card-head"><strong>Service Manager Performance</strong></div>
       <div class="table-scroll"><table>
-        <thead><tr><th>Name</th><th title="Floor LOP + Bodyshop LOP + Spare Counter (OTC) + Standard Part Sales + Counter Lube Sale" style="cursor:help;border-bottom:1px dotted var(--ink-soft);">Target</th><th>JC Revenue</th><th>OTC Revenue</th><th title="LOP achievement without GST" style="cursor:help;border-bottom:1px dotted var(--ink-soft);">Total Achievement</th><th>Achv %</th><th>Incentive ₹</th></tr></thead>
+        <thead><tr><th style="text-align:center;">Name</th><th style="text-align:center;cursor:help;border-bottom:1px dotted var(--ink-soft);" title="Floor LOP + Bodyshop LOP + Spare Counter (OTC) + Standard Part Sales + Counter Lube Sale">Target</th><th style="text-align:center;">JC Revenue</th><th style="text-align:center;">OTC Revenue</th><th style="text-align:center;cursor:help;border-bottom:1px dotted var(--ink-soft);" title="LOP achievement without GST">Total Achievement</th><th style="text-align:center;">Achv %</th><th style="text-align:center;">Incentive ₹</th></tr></thead>
         <tbody>${svMgrs.map(e => {
           const p = calcPerformanceAny(e, mk);
           const pct = p.target > 0 ? ((p.achievement/p.target)*100).toFixed(1) : '—';

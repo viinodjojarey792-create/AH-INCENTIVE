@@ -73,11 +73,11 @@ export function renderAdvisorDashboard(panel, mk, m) {
     <div style="font-size:18px;font-weight:700;margin-bottom:4px;">🎯 Advisor Dashboard — ${escapeHtml(m.label)}</div>
     <div class="kbd-note" style="margin-bottom:14px;">Target: <b>${vTarget} vehicles</b> + avg <b>${fmt(arTarget)}/vehicle</b> → earns ₹${pvRate}/vehicle + ${revPct}% revenue</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">
-      <div class="stat-card"><div class="stat-label">Advisors</div><div class="stat-value">${advisors.length}</div></div>
-      <div class="stat-card"><div class="stat-label">Both Targets Met</div><div class="stat-value" style="color:var(--good);">${rows.filter(r=>r.hitV&&r.hitA).length} / ${advisors.length}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Vehicles</div><div class="stat-value">${rows.reduce((s,r)=>s+r.jc.count,0)}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-value" style="font-size:14px;">${fmt(rows.reduce((s,r)=>s+r.jc.revenue,0))}</div></div>
-      <div class="stat-card"><div class="stat-label">Total Incentive</div><div class="stat-value" style="font-size:14px;">${fmt(rows.reduce((s,r)=>s+r.earned,0))}</div></div>
+      <div class="stat"><div class="label">Advisors</div><div class="value">${advisors.length}</div></div>
+      <div class="stat"><div class="label">Both Targets Met</div><div class="value" style="color:var(--good);">${rows.filter(r=>r.hitV&&r.hitA).length} / ${advisors.length}</div></div>
+      <div class="stat"><div class="label">Total Vehicles</div><div class="value">${rows.reduce((s,r)=>s+r.jc.count,0)}</div></div>
+      <div class="stat"><div class="label">Total Revenue</div><div class="value" style="font-size:14px;">${fmt(rows.reduce((s,r)=>s+r.jc.revenue,0))}</div></div>
+      <div class="stat"><div class="label">Total Incentive</div><div class="value" style="font-size:14px;">${fmt(rows.reduce((s,r)=>s+r.earned,0))}</div></div>
     </div>
     <div class="card"><div class="table-scroll"><table>
       <thead><tr>

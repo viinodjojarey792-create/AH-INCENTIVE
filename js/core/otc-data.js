@@ -53,10 +53,10 @@ export function renderOtcTab(containerId) {
       <div style="margin-bottom:10px;">Months with OTC data: ${pillsHtml}</div>
       ${m.otc && m.otc.total > 0 ? `
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;">
-          <div class="stat-card"><div class="stat-label">Data Period</div><div class="stat-value" style="font-size:14px;">${m.otc.dateRange ? new Date(m.otc.dateRange.from).toLocaleDateString('en-GB') + ' – ' + new Date(m.otc.dateRange.to).toLocaleDateString('en-GB') : '—'}</div></div>
-          <div class="stat-card"><div class="stat-label">OTC Revenue (Basic Price)</div><div class="stat-value">${fmt(m.otc.total)}</div></div>
-          <div class="stat-card"><div class="stat-label">Unique OTC Invoices</div><div class="stat-value">${m.otc.count}</div></div>
-          <div class="stat-card"><div class="stat-label">Last Updated</div><div class="stat-value" style="font-size:12px;">${m.otc.uploadedAt ? new Date(m.otc.uploadedAt).toLocaleDateString() : '—'}</div></div>
+          <div class="stat"><div class="label">Data Period</div><div class="value" style="font-size:14px;">${m.otc.dateRange ? new Date(m.otc.dateRange.from).toLocaleDateString('en-GB') + ' – ' + new Date(m.otc.dateRange.to).toLocaleDateString('en-GB') : '—'}</div></div>
+          <div class="stat"><div class="label">OTC Revenue (Basic Price)</div><div class="value">${fmt(m.otc.total)}</div></div>
+          <div class="stat"><div class="label">Unique OTC Invoices</div><div class="value">${m.otc.count}</div></div>
+          <div class="stat"><div class="label">Last Updated</div><div class="value" style="font-size:12px;">${m.otc.uploadedAt ? new Date(m.otc.uploadedAt).toLocaleDateString() : '—'}</div></div>
         </div>
         <div class="banner info"><span>ℹ</span><div>
           <b>Service Manager (Mukesh)</b> achievement = Job Card Revenue + OTC ${fmt(m.otc.total)}<br>

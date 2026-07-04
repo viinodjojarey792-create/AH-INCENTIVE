@@ -77,12 +77,12 @@ export function renderEmpDashboard(empId) {
     // KPI cards (hidden for advisors — they get the SA KPI card)
     (emp.category !== 'ADVISOR' ?
       '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px;">' +
-        '<div class="stat-card"><div class="stat-label">Target</div><div class="stat-value" style="font-size:15px;' + (emp.targetNote?'cursor:help;border-bottom:1px dotted var(--ink-soft);':'') + '" ' + (emp.targetNote?'title="'+escapeHtml(emp.targetNote)+'"':'') + '>' + fmt(p.target) + '</div></div>' +
-        '<div class="stat-card"><div class="stat-label"' + (['TECHNICIAN','ADVISOR','SUPERVISOR','NARODE','WM','SERVICE_MANAGER','BODYSHOP'].includes(emp.category)?' title="LOP achievement without GST" style="cursor:help;border-bottom:1px dotted var(--ink-soft);"':'') + '>Achievement</div><div class="stat-value" style="font-size:15px;">' + fmt(p.achievement) + '</div></div>' +
-        '<div class="stat-card"><div class="stat-label">Achv %</div><div class="stat-value" style="font-size:20px;color:' + pctCol + ';">' + pct + '%</div></div>' +
-        '<div class="stat-card"><div class="stat-label">Perf Incentive</div><div class="stat-value" style="font-size:15px;color:var(--good);">' + fmt(perfEarned) + '</div></div>' +
-        '<div class="stat-card"><div class="stat-label">Behavioral</div><div class="stat-value" style="font-size:15px;color:var(--teal);">' + fmt(behEarned) + '</div></div>' +
-        '<div class="stat-card" style="border:2px solid var(--good);"><div class="stat-label">Total Incentive</div><div class="stat-value" style="font-size:16px;color:var(--good);">' + fmt(totalIncentive) + '</div></div>' +
+        '<div class="stat"><div class="label">Target</div><div class="value" style="font-size:15px;' + (emp.targetNote?'cursor:help;border-bottom:1px dotted var(--ink-soft);':'') + '" ' + (emp.targetNote?'title="'+escapeHtml(emp.targetNote)+'"':'') + '>' + fmt(p.target) + '</div></div>' +
+        '<div class="stat"><div class="label"' + (['TECHNICIAN','ADVISOR','SUPERVISOR','NARODE','WM','SERVICE_MANAGER','BODYSHOP'].includes(emp.category)?' title="LOP achievement without GST" style="cursor:help;border-bottom:1px dotted var(--ink-soft);"':'') + '>Achievement</div><div class="value" style="font-size:15px;">' + fmt(p.achievement) + '</div></div>' +
+        '<div class="stat"><div class="label">Achv %</div><div class="value" style="font-size:20px;color:' + pctCol + ';">' + pct + '%</div></div>' +
+        '<div class="stat"><div class="label">Perf Incentive</div><div class="value" style="font-size:15px;color:var(--good);">' + fmt(perfEarned) + '</div></div>' +
+        '<div class="stat"><div class="label">Behavioral</div><div class="value" style="font-size:15px;color:var(--teal);">' + fmt(behEarned) + '</div></div>' +
+        '<div class="stat" style="border:2px solid var(--good);"><div class="label">Total Incentive</div><div class="value" style="font-size:16px;color:var(--good);">' + fmt(totalIncentive) + '</div></div>' +
       '</div>' +
       '<div class="card" style="margin-bottom:14px;padding:16px 20px;">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
