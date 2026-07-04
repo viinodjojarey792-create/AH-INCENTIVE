@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workshop Incentive Working</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate"><div class="auth-card" id="authCard"></div></div>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <div class="brand-dot"></div>
+        <div class="brand-title">Workshop Incentive</div>
+      </div>
+      <div class="brand-sub">Working Sheet</div>
+    </div>
+    <div class="nav" id="navList"></div>
+    <div class="sidebar-foot" id="sidebarFoot">v1 &middot; data saved automatically</div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="topbarTitle">Dashboard</h1>
+        <div class="sub" id="topbarSub">Final incentive summary for the selected month</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div id="globalMonthWrap" class="month-picker">
+          <label>Month</label>
+          <select id="monthSelect"></select>
+          <button class="btn-mini" id="newMonthBtn" title="Start a new month">+ New</button>
+        </div>
+        <span id="syncIndicator" style="font-size:11px;color:var(--teal);opacity:0;transition:opacity 0.5s;margin-left:4px;"></span>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<div class="modal-bg" id="modalBg"><div class="modal" id="modalBody"></div></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
