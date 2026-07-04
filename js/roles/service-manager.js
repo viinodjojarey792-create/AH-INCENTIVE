@@ -67,13 +67,13 @@ export function renderServiceManagerDashboard(panel, mk, m) {
           const p = calcPerformanceAny(e, mk);
           const pct = p.target > 0 ? ((p.achievement/p.target)*100).toFixed(1) : '—';
           const col = parseFloat(pct)>=100?'var(--good)':parseFloat(pct)>=80?'var(--amber)':'var(--bad)';
-          return `<tr><td><b>${escapeHtml(toTitleCase(e.nameHR))}</b></td>
-            <td class="num">${fmt(p.target)}</td>
-            <td class="num">${fmt(jcTotal)}</td>
-            <td class="num">${fmt(otc.total||0)}</td>
-            <td class="num"><b>${fmt(p.achievement)}</b></td>
-            <td class="num" style="color:${col};font-weight:700;">${pct}%</td>
-            <td class="num"><b>${fmt(p.earned)}</b></td></tr>`;
+          return `<tr><td style="text-align:center;"><b>${escapeHtml(toTitleCase(e.nameHR))}</b></td>
+            <td class="num" style="text-align:center;">${fmt(p.target)}</td>
+            <td class="num" style="text-align:center;">${fmt(jcTotal)}</td>
+            <td class="num" style="text-align:center;">${fmt(otc.total||0)}</td>
+            <td class="num" style="text-align:center;"><b>${fmt(p.achievement)}</b></td>
+            <td class="num" style="text-align:center;color:${col};font-weight:700;">${pct}%</td>
+            <td class="num" style="text-align:center;"><b>${fmt(p.earned)}</b></td></tr>`;
         }).join('') || '<tr><td colspan="7"><div class="empty-state">No Service Manager found. Set category = Service Manager in Employees tab.</div></td></tr>'}
         </tbody></table></div></div>`;
   document.getElementById('dashBackBtn').onclick = () => { setActiveDashboard(null); renderDashboard(); };
