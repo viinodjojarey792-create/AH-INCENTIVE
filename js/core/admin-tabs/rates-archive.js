@@ -232,33 +232,6 @@ export function renderRates(containerId) {
       });
     });
   }
-
-  // Wire bulk-apply buttons
-  if (canBulk) {
-    document.querySelectorAll('[data-bulk-apply]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const cat = btn.dataset.bulkApply;
-        const inp = document.getElementById(`bulk-rate-${cat}`);
-        const pct = parseFloat(inp.value);
-        if (isNaN(pct) || pct < 0) { toast('Enter a valid % first', true); return; }
-
-        // Save category-level rate
-        m.categoryRates[cat] = pct;
-
-        // Apply to all employees of this category
-        const targets = list.filter(e => e.category === cat);
-        targets.forEach(e => setIncentivePct(mk, e.id, cat, pct));
-
-        scheduleSave('months', () => APP.months);
-        paintRateRows(list);
-
-        const statusEl = document.getElementById('bulkRateStatus');
-        statusEl.innerHTML = `<span style="color:var(--good)">✓ ${pct}% applied to all ${targets.length} ${CATEGORY_LABELS[cat]} employees for ${escapeHtml(m.label)}</span>`;
-        toast(`${pct}% set for all ${CATEGORY_LABELS[cat]} (${targets.length} employees)`);
-        setTimeout(() => { if (statusEl) statusEl.innerHTML = ''; }, 4000);
-      });
-    });
-  }
 }
 
 export function paintRateRows(list) {
