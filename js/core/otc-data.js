@@ -27,6 +27,18 @@ export function renderOtcTab(containerId) {
   const hasAnyOtcData = monthsWithData.length > 0;
   const hasThisMonth = m.otc && m.otc.total > 0;
 
+  // Complete data record — earliest to latest invoice date and totals across every month ever uploaded
+  let overallFrom = null, overallTo = null, overallInvoices = 0, overallRevenue = 0;
+  for (const k of monthsWithData) {
+    const o = APP.months[k].otc;
+    overallInvoices += o.count || 0;
+    overallRevenue += o.total || 0;
+    if (o.dateRange) {
+      if (!overallFrom || new Date(o.dateRange.from) < new Date(overallFrom)) overallFrom = o.dateRange.from;
+      if (!overallTo || new Date(o.dateRange.to) > new Date(overallTo)) overallTo = o.dateRange.to;
+    }
+  }
+
   panel.innerHTML = `
     <div class="card">
       <div class="card-head"><strong>Sales Tax — OTC</strong></div>
@@ -42,6 +54,14 @@ export function renderOtcTab(containerId) {
       ` : `<div class="banner"><span>🔒</span><div>You don't have permission to upload data here. Contact an admin if you need this changed.</div></div>`}
       ${hasAnyOtcData ? `
         <div class="divider"></div>
+        <div class="kbd-note" style="margin-bottom:6px;"><b>Complete Data Record</b> — full range of everything uploaded so far</div>
+        <div class="stat-row" style="margin-bottom:16px;">
+          <div class="stat"><div class="label">Data Available From — To</div><div class="value" style="font-size:14px;">${overallFrom && overallTo ? new Date(overallFrom).toLocaleDateString('en-GB') + ' – ' + new Date(overallTo).toLocaleDateString('en-GB') : '—'}</div></div>
+          <div class="stat"><div class="label">Months Covered</div><div class="value">${monthsWithData.length}</div></div>
+          <div class="stat"><div class="label">Total OTC Invoices (All Months)</div><div class="value">${overallInvoices}</div></div>
+          <div class="stat"><div class="label">Total OTC Revenue (All Months)</div><div class="value" style="font-size:16px;">${fmt(overallRevenue)}</div></div>
+        </div>
+        <div class="kbd-note" style="margin-bottom:6px;"><b>${escapeHtml(m.label)}</b> — selected month</div>
         <div class="stat-row">
           <div class="stat"><div class="label">File</div><div class="value" style="font-size:13px;">${escapeHtml(m.otc.fileName || '—')}</div></div>
           <div class="stat"><div class="label">Data Period</div><div class="value" style="font-size:14px;">${m.otc.dateRange ? new Date(m.otc.dateRange.from).toLocaleDateString('en-GB') + ' – ' + new Date(m.otc.dateRange.to).toLocaleDateString('en-GB') : '—'}</div></div>
