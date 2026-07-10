@@ -30,7 +30,7 @@ export function renderOtcTab(containerId) {
   panel.innerHTML = `
     <div class="card">
       <div class="card-head"><strong>Sales Tax — OTC</strong></div>
-      <p class="kbd-note" style="margin-top:-6px; margin-bottom:14px;">Upload your Sales Tax CSV here — every month's OTC revenue is read automatically from <b>Invoice Date</b>, keeping only rows where <b>Order Type</b> is <b>OTC Sales</b>, summed from <b>Basic Price</b> (excl. tax). Each upload is merged into what's already stored: invoices already seen (matched by Order Number) are skipped automatically, so re-uploading the same file or an overlapping export never double-counts.</p>
+      <p class="kbd-note" style="margin-top:-6px; margin-bottom:14px;">Upload your Sales Tax CSV here — every month's OTC revenue is read automatically from <b>Invoice Date</b>, keeping only rows where <b>Order Type</b> is <b>OTC Sales</b> and <b>Part Category</b> is <b>STD - Standard</b>, summed from <b>Basic Price</b> (excl. tax). Each upload is merged into what's already stored: invoices already seen (matched by Order Number) are skipped automatically, so re-uploading the same file or an overlapping export never double-counts.</p>
       ${canUp ? `
       <label class="upload-zone" for="otcFileInput">
         <div class="icon">↑</div>
@@ -85,11 +85,12 @@ export function renderOtcTab(containerId) {
 
       // Group rows by month → then by Order Number → sum Basic Price per order
       const grouped = {}; // mk → { orderNo: basicPriceTotal }
-      let skippedType = 0, skippedDate = 0;
+      let skippedType = 0, skippedDate = 0, skippedCategory = 0;
       const groupedDates = {}; // mk → { min: Date, max: Date }
 
       for (const row of rows) {
         if ((row['Order Type'] || '').trim() !== 'OTC Sales') { skippedType++; continue; }
+        if ((row['Part Category'] || '').trim() !== 'STD - Standard') { skippedCategory++; continue; }
         const invoiceDate = parseDateFlexible((row['Invoice Date'] || '').trim());
         if (!invoiceDate) { skippedDate++; continue; }
         const rowMk = monthKeyOf(invoiceDate);
@@ -146,7 +147,8 @@ export function renderOtcTab(containerId) {
         `<span style="color:var(--good)">✓ <b>${totalAdded} new OTC invoices added</b></span>` +
         (totalSkipped ? ` <span class="kbd-note">(${totalSkipped} duplicates skipped)</span>` : '') +
         `<br><span class="kbd-note">${monthsSummary.join(' | ')}</span>` +
-        (skippedType ? `<br><span class="kbd-note">${skippedType} non-OTC rows ignored (JobCard/CPOTC)</span>` : '');
+        (skippedType ? `<br><span class="kbd-note">${skippedType} non-OTC rows ignored (JobCard/CPOTC)</span>` : '') +
+        (skippedCategory ? `<br><span class="kbd-note">${skippedCategory} non-Standard part category rows ignored</span>` : '');
 
       renderOtcTab(containerId);
       rerenderActiveTab();
