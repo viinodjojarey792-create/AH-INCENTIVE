@@ -42,7 +42,7 @@ export function renderOtcTab(containerId) {
   panel.innerHTML = `
     <div class="card">
       <div class="card-head"><strong>Sales Tax — OTC</strong></div>
-      <p class="kbd-note" style="margin-top:-6px; margin-bottom:14px;">Upload your Sales Tax CSV here — every month's OTC revenue is read automatically from <b>Invoice Date</b>, keeping only rows where <b>Order Type</b> is <b>OTC Sales</b> and <b>Part Category</b> is <b>STD - Standard</b>, summed from <b>Basic Price</b> (excl. tax). Each upload is merged into what's already stored: invoices already seen (matched by Order Number) are skipped automatically, so re-uploading the same file or an overlapping export never double-counts.</p>
+      <p class="kbd-note" style="margin-top:-6px; margin-bottom:14px;">Upload your Sales Tax CSV here — every month's OTC data is read automatically from <b>Invoice Date</b> (which month it belongs to), keeping only rows where <b>Order Type</b> is <b>OTC Sales</b> and <b>Part Category</b> is <b>STD - Standard</b>: revenue is summed from <b>Basic Price</b> (excl. tax) and count is summed from <b>QTY Shipped</b>. Each upload is merged into what's already stored: invoices already seen (matched by Order Number) are skipped automatically, so re-uploading the same file or an overlapping export never double-counts.</p>
       ${canUp ? `
       <label class="upload-zone" for="otcFileInput">
         <div class="icon">↑</div>
@@ -58,7 +58,7 @@ export function renderOtcTab(containerId) {
         <div class="stat-row" style="margin-bottom:16px;">
           <div class="stat"><div class="label">Data Available From — To</div><div class="value" style="font-size:14px;">${overallFrom && overallTo ? new Date(overallFrom).toLocaleDateString('en-GB') + ' – ' + new Date(overallTo).toLocaleDateString('en-GB') : '—'}</div></div>
           <div class="stat"><div class="label">Months Covered</div><div class="value">${monthsWithData.length}</div></div>
-          <div class="stat"><div class="label">Total OTC Invoices (All Months)</div><div class="value">${overallInvoices}</div></div>
+          <div class="stat"><div class="label">Total OTC Qty Shipped (All Months)</div><div class="value">${overallInvoices}</div></div>
           <div class="stat"><div class="label">Total OTC Revenue (All Months)</div><div class="value" style="font-size:16px;">${fmt(overallRevenue)}</div></div>
         </div>
         <div class="kbd-note" style="margin-bottom:6px;"><b>${escapeHtml(m.label)}</b> — selected month</div>
@@ -66,7 +66,7 @@ export function renderOtcTab(containerId) {
           <div class="stat"><div class="label">File</div><div class="value" style="font-size:13px;">${escapeHtml(m.otc.fileName || '—')}</div></div>
           <div class="stat"><div class="label">Data Period</div><div class="value" style="font-size:14px;">${m.otc.dateRange ? new Date(m.otc.dateRange.from).toLocaleDateString('en-GB') + ' – ' + new Date(m.otc.dateRange.to).toLocaleDateString('en-GB') : '—'}</div></div>
           <div class="stat"><div class="label">Months Covered</div><div class="value">${monthsWithData.length}</div></div>
-          <div class="stat"><div class="label">OTC Invoices in ${escapeHtml(m.label)}</div><div class="value">${m.otc.count || 0}</div></div>
+          <div class="stat"><div class="label">OTC Qty Shipped in ${escapeHtml(m.label)}</div><div class="value">${m.otc.count || 0}</div></div>
           <div class="stat"><div class="label">OTC Revenue (Basic Price) — ${escapeHtml(m.label)}</div><div class="value" style="font-size:18px;">${fmt(m.otc.total || 0)}</div></div>
         </div>
         ${!hasThisMonth ? `<div class="banner"><span>⚠</span><div>No OTC invoices in ${escapeHtml(m.label)} were found in the uploaded file(s). Months actually covered: ${monthsWithData.map(monthLabelOf).join(', ')}.</div></div>` : ''}
@@ -103,8 +103,8 @@ export function renderOtcTab(containerId) {
       const rows = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
       if (!rows.length) throw new Error('File appears empty or could not be parsed.');
 
-      // Group rows by month → then by Order Number → sum Basic Price per order
-      const grouped = {}; // mk → { orderNo: basicPriceTotal }
+      // Group rows by month → then by Order Number → sum Basic Price (revenue) and QTY Shipped (count) per order
+      const grouped = {}; // mk → { orderNo: { revenue, qty } }
       let skippedType = 0, skippedDate = 0, skippedCategory = 0;
       const groupedDates = {}; // mk → { min: Date, max: Date }
 
@@ -117,7 +117,9 @@ export function renderOtcTab(containerId) {
         const orderNo = (row['Order Number'] || '').trim();
         if (!orderNo) continue;
         if (!grouped[rowMk]) grouped[rowMk] = {};
-        grouped[rowMk][orderNo] = (grouped[rowMk][orderNo] || 0) + money(row['Basic Price']);
+        if (!grouped[rowMk][orderNo]) grouped[rowMk][orderNo] = { revenue: 0, qty: 0 };
+        grouped[rowMk][orderNo].revenue += money(row['Basic Price']);
+        grouped[rowMk][orderNo].qty += money(row['QTY Shipped']);
         if (!groupedDates[rowMk]) groupedDates[rowMk] = { min: invoiceDate, max: invoiceDate };
         if (invoiceDate < groupedDates[rowMk].min) groupedDates[rowMk].min = invoiceDate;
         if (invoiceDate > groupedDates[rowMk].max) groupedDates[rowMk].max = invoiceDate;
@@ -132,18 +134,19 @@ export function renderOtcTab(containerId) {
         if (!mData.otc.invoices) mData.otc.invoices = {};
 
         let added = 0, skipped = 0;
-        for (const [orderNo, orderTotal] of Object.entries(orders)) {
+        for (const [orderNo, orderData] of Object.entries(orders)) {
           if (mData.otc.invoices[orderNo] !== undefined) {
             skipped++; // already exists — skip
           } else {
-            mData.otc.invoices[orderNo] = orderTotal; // NEW — append
+            mData.otc.invoices[orderNo] = orderData; // NEW — append { revenue, qty }
             added++;
           }
         }
 
-        // Recompute totals from all stored invoices
-        mData.otc.total = Object.values(mData.otc.invoices).reduce((s, v) => s + v, 0);
-        mData.otc.count = Object.keys(mData.otc.invoices).length;
+        // Recompute totals from all stored invoices (Basic Price = revenue, QTY Shipped = count)
+        // Legacy entries stored as a plain number (pre-QTY-Shipped format) count as revenue-only, 0 qty.
+        mData.otc.total = Object.values(mData.otc.invoices).reduce((s, v) => s + (typeof v === 'object' ? v.revenue : v), 0);
+        mData.otc.count = Object.values(mData.otc.invoices).reduce((s, v) => s + (typeof v === 'object' ? v.qty : 0), 0);
         mData.otc.fileName = file.name;
         mData.otc.uploadedAt = new Date().toISOString();
         if (groupedDates[rowMk]) {
