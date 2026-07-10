@@ -22,22 +22,15 @@ export function renderOtcTab(containerId) {
   if (!panel) return;
   const canUp = canDo('upload_data') || isAdmin();
 
-  // Build month coverage pills
   const monthsWithData = Object.keys(APP.months)
     .filter(k => APP.months[k].otc && APP.months[k].otc.total > 0).sort();
-  const pillsHtml = monthsWithData.length
-    ? monthsWithData.map(k => `<span class="pill ${k===mk?'pill-amber':'pill-neutral'}" style="padding:2px 8px;">${escapeHtml(monthLabelOf(k))}</span>`).join(' ')
-    : '<span class="kbd-note">No OTC data uploaded yet.</span>';
+  const hasAnyOtcData = monthsWithData.length > 0;
+  const hasThisMonth = m.otc && m.otc.total > 0;
 
   panel.innerHTML = `
-    <div class="card" style="margin-bottom:14px;">
-      <div class="card-head"><strong>Sales Tax — OTC &nbsp;<span class="kbd-note">${escapeHtml(monthLabelOf(mk))}</span></strong></div>
-      <p class="kbd-note" style="margin-bottom:10px;">
-        Upload your Sales Tax CSV. Rows are filtered by:<br>
-        • <b>Invoice Date</b> (Col D) — must fall in the selected month<br>
-        • <b>Order Number</b> — must contain <b>OTC</b> (rows with <b>CPOTC</b> are excluded)<br>
-        • Revenue taken from <b>Basic Price</b> (Col X, excl. tax)
-      </p>
+    <div class="card">
+      <div class="card-head"><strong>Sales Tax — OTC</strong></div>
+      <p class="kbd-note" style="margin-top:-6px; margin-bottom:14px;">Upload your Sales Tax CSV here — every month's OTC revenue is read automatically from <b>Invoice Date</b>, keeping only rows where <b>Order Type</b> is <b>OTC Sales</b>, summed from <b>Basic Price</b> (excl. tax). Each upload is merged into what's already stored: invoices already seen (matched by Order Number) are skipped automatically, so re-uploading the same file or an overlapping export never double-counts.</p>
       ${canUp ? `
       <label class="upload-zone" for="otcFileInput">
         <div class="icon">↑</div>
@@ -46,22 +39,21 @@ export function renderOtcTab(containerId) {
       </label>
       <input type="file" id="otcFileInput" accept=".csv" style="display:none;">
       <div id="otcUploadStatus" style="font-size:12px;margin-top:8px;min-height:18px;"></div>
-      ` : ''}
-    </div>
-    <div class="card">
-      <div class="card-head"><strong>OTC Summary</strong></div>
-      <div style="margin-bottom:10px;">Months with OTC data: ${pillsHtml}</div>
-      ${m.otc && m.otc.total > 0 ? `
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;">
-          <div class="stat" style="text-align:center;"><div class="label">Data Period</div><div class="value" style="font-size:14px;">${m.otc.dateRange ? new Date(m.otc.dateRange.from).toLocaleDateString('en-GB') + ' – ' + new Date(m.otc.dateRange.to).toLocaleDateString('en-GB') : '—'}</div></div>
-          <div class="stat" style="text-align:center;"><div class="label">OTC Revenue (Basic Price)</div><div class="value">${fmt(m.otc.total)}</div></div>
-          <div class="stat" style="text-align:center;"><div class="label">Unique OTC Invoices</div><div class="value">${m.otc.count}</div></div>
-          <div class="stat" style="text-align:center;"><div class="label">Last Updated</div><div class="value" style="font-size:12px;">${m.otc.uploadedAt ? new Date(m.otc.uploadedAt).toLocaleDateString() : '—'}</div></div>
+      ` : `<div class="banner"><span>🔒</span><div>You don't have permission to upload data here. Contact an admin if you need this changed.</div></div>`}
+      ${hasAnyOtcData ? `
+        <div class="divider"></div>
+        <div class="stat-row">
+          <div class="stat"><div class="label">File</div><div class="value" style="font-size:13px;">${escapeHtml(m.otc.fileName || '—')}</div></div>
+          <div class="stat"><div class="label">Data Period</div><div class="value" style="font-size:14px;">${m.otc.dateRange ? new Date(m.otc.dateRange.from).toLocaleDateString('en-GB') + ' – ' + new Date(m.otc.dateRange.to).toLocaleDateString('en-GB') : '—'}</div></div>
+          <div class="stat"><div class="label">Months Covered</div><div class="value">${monthsWithData.length}</div></div>
+          <div class="stat"><div class="label">OTC Invoices in ${escapeHtml(m.label)}</div><div class="value">${m.otc.count || 0}</div></div>
+          <div class="stat"><div class="label">OTC Revenue (Basic Price) — ${escapeHtml(m.label)}</div><div class="value" style="font-size:18px;">${fmt(m.otc.total || 0)}</div></div>
         </div>
-        <div class="banner info"><span>ℹ</span><div>
-          <b>Service Manager (Mukesh)</b> achievement = Job Card Revenue + OTC ${fmt(m.otc.total)}<br>
-          <b>Store Manager (Chetan)</b> achievement = OTC ${fmt(m.otc.total)} only
-        </div></div>
+        ${!hasThisMonth ? `<div class="banner"><span>⚠</span><div>No OTC invoices in ${escapeHtml(m.label)} were found in the uploaded file(s). Months actually covered: ${monthsWithData.map(monthLabelOf).join(', ')}.</div></div>` : ''}
+        ${hasThisMonth ? `<div class="banner info" style="margin-top:12px;"><span>ℹ</span><div>
+          <b>Service Manager</b> achievement = Job Card Revenue + OTC ${fmt(m.otc.total)}<br>
+          <b>Store Manager</b> achievement = OTC ${fmt(m.otc.total)} only
+        </div></div>` : ''}
         ${m.otc.history && m.otc.history.length > 1 ? `
         <div style="margin-top:12px;">
           <div class="kbd-note" style="margin-bottom:4px;">Upload history (${m.otc.history.length} uploads):</div>
@@ -69,8 +61,8 @@ export function renderOtcTab(containerId) {
             `<div class="kbd-note">• ${new Date(h.at).toLocaleString()} — <b>+${h.added}</b> added, ${h.skipped} duplicates skipped (${escapeHtml(h.fileName)})</div>`
           ).join('')}
         </div>` : ''}
-        ${canUp ? `<button class="btn secondary" id="otcClearBtn" style="margin-top:12px;border-color:var(--bad);color:var(--bad);font-size:12px;">🗑 Clear all OTC data for ${escapeHtml(monthLabelOf(mk))}</button>` : ''}
-      ` : `<div class="banner"><span>⚠</span><div>No OTC data for <b>${escapeHtml(monthLabelOf(mk))}</b>. Upload the Sales Tax CSV above — only new invoices will be added each time, duplicates are automatically skipped.</div></div>`}
+        ${canUp && hasThisMonth ? `<button class="btn ghost" id="otcClearBtn">Clear uploaded data</button>` : ''}
+      ` : `<div class="empty-state" style="padding:24px 0 0 0;"><div class="icon">○</div>No OTC data uploaded yet.</div>`}
     </div>`;
 
   if (!canUp) return;
