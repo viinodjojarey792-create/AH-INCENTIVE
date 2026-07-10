@@ -6,6 +6,7 @@ import { parseCsvFile } from '../core/import-handlers.js';
 import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
 import { registerRole } from '../core/role-registry.js';
 import { canDo, isAdmin } from '../core/auth.js';
+import { calcEarnedPerformance as calcEarnedPerformanceCore } from '../core/incentive-engine.js';
 
 export function calcPerformance(emp, monthKey) {
   const m = ensureMonth(monthKey);
@@ -27,7 +28,7 @@ export function calcEarnedPerformance(emp, monthKey, perf) {
 // ── Warranty Dashboard ───────────────────────────────────────
 export function renderWarrantyDashboard(panel, mk, m) {
   const wEmps = activeEmployees().filter(e => e.category === 'WARRANTY');
-  const rows = wEmps.map(e => ({ e, p: calcPerformance(e, mk), hr: hrFor(mk, e.id) }));
+  const rows = wEmps.map(e => ({ e, p: calcEarnedPerformanceCore(e, mk), hr: hrFor(mk, e.id) }));
 
   panel.innerHTML = dashBack() + `
     <div style="font-size:18px;font-weight:700;margin-bottom:16px;">🛡 Warranty Dashboard — ${escapeHtml(m.label)}</div>

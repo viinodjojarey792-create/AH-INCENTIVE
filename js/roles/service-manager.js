@@ -2,7 +2,7 @@ import { APP } from '../core/state.js';
 import { money, fmt, escapeHtml, toTitleCase, activeEmployees } from '../core/utils.js';
 import { getJobCardBucket } from '../core/job-card-data.js';
 import { ensureMonth } from '../core/months.js';
-import { calcAllFinalRows, calcPerformance as calcPerformanceAny } from '../core/incentive-engine.js';
+import { calcAllFinalRows, calcPerformance as calcPerformanceAny, calcEarnedPerformance } from '../core/incentive-engine.js';
 import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
 import { registerRole } from '../core/role-registry.js';
 
@@ -64,7 +64,7 @@ export function renderServiceManagerDashboard(panel, mk, m) {
       <div class="table-scroll"><table>
         <thead><tr><th style="text-align:center;">Name</th><th style="text-align:center;cursor:help;border-bottom:1px dotted var(--ink-soft);" title="Floor LOP + Bodyshop LOP + Spare Counter (OTC) + Standard Part Sales + Counter Lube Sale">Target</th><th style="text-align:center;">JC Revenue</th><th style="text-align:center;">OTC Revenue</th><th style="text-align:center;cursor:help;border-bottom:1px dotted var(--ink-soft);" title="LOP achievement without GST">Total Achievement</th><th style="text-align:center;">Achv %</th><th style="text-align:center;">Incentive ₹</th></tr></thead>
         <tbody>${svMgrs.map(e => {
-          const p = calcPerformanceAny(e, mk);
+          const p = calcEarnedPerformance(e, mk);
           const pct = p.target > 0 ? ((p.achievement/p.target)*100).toFixed(1) : '—';
           const col = parseFloat(pct)>=100?'var(--good)':parseFloat(pct)>=80?'var(--amber)':'var(--bad)';
           return `<tr><td style="text-align:center;"><b>${escapeHtml(toTitleCase(e.nameHR))}</b></td>

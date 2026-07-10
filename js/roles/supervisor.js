@@ -5,7 +5,7 @@ import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.
 import { registerRole } from '../core/role-registry.js';
 // Technician sub-rows below need the category-dispatching calcPerformance
 // (this module's own calcPerformance only implements the SUPERVISOR branch).
-import { calcPerformance as calcPerformanceAny } from '../core/incentive-engine.js';
+import { calcPerformance as calcPerformanceAny, calcEarnedPerformance } from '../core/incentive-engine.js';
 
 export function calcPerformance(emp, monthKey) {
   let target = 0, achievement = 0;
@@ -24,7 +24,7 @@ export function calcPerformance(emp, monthKey) {
 export function renderSupervisorDashboard(panel, mk, m) {
   const supervisors = activeEmployees().filter(e => e.category === 'SUPERVISOR');
   const rows = supervisors.map(s => {
-    const p = calcPerformance(s, mk);
+    const p = calcEarnedPerformance(s, mk);
     const team = activeEmployees().filter(e => e.category === 'TECHNICIAN' && e.supervisorId === s.id);
     const teamAch = team.reduce((sum, t) => sum + jobCardLookupTech(mk, t).revenue, 0);
     return { s, p, team, teamAch };

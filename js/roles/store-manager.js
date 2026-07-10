@@ -2,6 +2,7 @@ import { money, fmt, escapeHtml, activeEmployees } from '../core/utils.js';
 import { ensureMonth, hrFor } from '../core/months.js';
 import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
 import { registerRole } from '../core/role-registry.js';
+import { calcEarnedPerformance } from '../core/incentive-engine.js';
 
 // STORE_MANAGER: Achievement = OTC Basic Price revenue only
 export function calcPerformance(emp, monthKey) {
@@ -18,7 +19,7 @@ export function calcPerformance(emp, monthKey) {
 export function renderSparePartsDashboard(panel, mk, m) {
   const storeMgrs = activeEmployees().filter(e => e.category === 'STORE_MANAGER');
   const otc = m.otc || {};
-  const rows = storeMgrs.map(e => ({ e, p: calcPerformance(e, mk), hr: hrFor(mk, e.id) }));
+  const rows = storeMgrs.map(e => ({ e, p: calcEarnedPerformance(e, mk), hr: hrFor(mk, e.id) }));
 
   panel.innerHTML = dashBack() + `
     <div style="font-size:18px;font-weight:700;margin-bottom:16px;">🏪 Spare Parts Dashboard — ${escapeHtml(m.label)}</div>
