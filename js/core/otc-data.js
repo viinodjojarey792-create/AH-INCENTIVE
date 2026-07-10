@@ -1,5 +1,5 @@
 import { APP } from './state.js';
-import { money, fmt, escapeHtml, parseDateFlexible, monthKeyOf, monthLabelOf, toast } from './utils.js';
+import { money, fmt, escapeHtml, parseDateFlexible, monthKeyOf, monthLabelOf, toast, confirmDestructive } from './utils.js';
 import { scheduleSave } from './store.js';
 import { ensureMonth } from './months.js';
 import { canDo, isAdmin } from './auth.js';
@@ -75,7 +75,7 @@ export function renderOtcTab(containerId) {
 
   if (!canUp) return;
   document.getElementById('otcClearBtn')?.addEventListener('click', () => {
-    if (!confirm(`Clear ALL OTC data for ${monthLabelOf(mk)}? This cannot be undone.`)) return;
+    if (!confirmDestructive(`Clear ALL OTC data for ${monthLabelOf(mk)}? This cannot be undone.`)) return;
     ensureMonth(mk).otc = { invoices: {}, total: 0, count: 0, fileName: null, uploadedAt: null, history: [] };
     scheduleSave('months', () => APP.months);
     renderOtcTab(containerId);

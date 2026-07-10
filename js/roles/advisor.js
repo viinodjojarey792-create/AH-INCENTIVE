@@ -6,6 +6,7 @@ import { jobCardLookupAdvisor } from '../core/job-card-data.js';
 import { parseCsvFile } from '../core/import-handlers.js';
 import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
 import { registerRole } from '../core/role-registry.js';
+import { canDo, isAdmin } from '../core/auth.js';
 
 export function calcPerformance(emp, monthKey) {
   const r        = jobCardLookupAdvisor(monthKey, emp);
@@ -188,17 +189,20 @@ export function renderVehicleInSection(containerId) {
   const meta = m.special.vehicleInMeta || {};
   const advisors = activeEmployees(false).filter(e => e.category === 'ADVISOR').sort((a, b) => a.srNo - b.srNo);
   const panel = document.getElementById(containerId);
+  const canUp = canDo('upload_data') || isAdmin();
 
   panel.innerHTML = `
     <div class="card">
       <div class="card-head"><strong>Vehicle-In Data — ${escapeHtml(m.label)}</strong></div>
       <p class="kbd-note" style="margin-top:-6px; margin-bottom:14px;">Upload the Vehicle-In log — Paid / Minor Repair / General Repair / Free1-3 counts and total vehicles per advisor are computed automatically from rows dated in ${escapeHtml(m.label)}. Nitrogen, Battery Charging, Muffler Coating, Coating, Chain Lube and AMC have no source in this file, so they stay editable by hand.</p>
+      ${canUp ? `
       <label class="upload-zone" for="viFileInput">
         <div class="icon">↑</div>
         <div><b>Click to choose CSV</b> or drag it here</div>
         <div class="hint">VEHICLE-IN-DATA.csv</div>
       </label>
       <input type="file" id="viFileInput" accept=".csv" style="display:none;">
+      ` : `<div class="banner"><span>🔒</span><div>You don't have permission to upload data here. Contact an admin if you need this changed.</div></div>`}
       ${meta.fileName ? `<div class="footer-note">Last uploaded: ${escapeHtml(meta.fileName)} — ${meta.rowsInMonth ?? 0} row(s) in ${escapeHtml(m.label)}.</div>` : ''}
       <div id="viUnmatchedWrap"></div>
       <div class="divider"></div>
@@ -216,7 +220,7 @@ export function renderVehicleInSection(containerId) {
   `;
   paintVehicleInRows(advisors);
 
-  document.getElementById('viFileInput').addEventListener('change', async (e) => {
+  document.getElementById('viFileInput')?.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     try {

@@ -1,5 +1,5 @@
 import { APP, SESSION } from '../state.js';
-import { escapeHtml, uid, toast, toTitleCase } from '../utils.js';
+import { escapeHtml, uid, toast, toTitleCase, confirmDestructive } from '../utils.js';
 import { Store, scheduleSave } from '../store.js';
 import {
   ROLE_PRESETS, ALL_TAB_PERMS, ALL_ACTION_PERMS, defaultPermissions,
@@ -97,7 +97,7 @@ export function paintCustomRoleRows() {
     if (!cr) return;
     const inUse = APP.users.some(u => u.role === cr.id);
     if (inUse) { toast('Cannot delete — some logins are using this designation. Reassign them first.', true); return; }
-    if (!confirm('Delete designation "' + cr.name + '"?')) return;
+    if (!confirmDestructive('Delete designation "' + cr.name + '"?')) return;
     APP.customRoles = APP.customRoles.filter(r => r.id !== cr.id);
     scheduleSave('customRoles', () => APP.customRoles);
     renderUsers(); toast('Designation deleted');
@@ -235,7 +235,7 @@ export function paintUserRows() {
     const u = APP.users.find(x => x.id === b.dataset.deluser);
     if (!u) return;
     if (u.role === 'ADMIN' && adminCount() <= 1) { toast('Cannot delete the last Admin account', true); return; }
-    if (!confirm('Delete login for ' + u.name + '? This cannot be undone.')) return;
+    if (!confirmDestructive('Delete login for ' + u.name + '? This cannot be undone.')) return;
     APP.users = APP.users.filter(x => x.id !== u.id);
     Store.set('users', APP.users);
     paintUserRows();
@@ -359,7 +359,7 @@ export function openUserEditor(userId) {
   if (!isNew && u.role !== 'ADMIN') {
     document.getElementById('uf-delete').addEventListener('click', () => {
       if (u.id === SESSION.userId) { toast('You cannot delete the login you\'re currently using', true); return; }
-      if (!confirm('Delete login for ' + u.name + '?')) return;
+      if (!confirmDestructive('Delete login for ' + u.name + '?')) return;
       APP.users = APP.users.filter(x => x.id !== u.id);
       Store.set('users', APP.users); // immediate
       closeModal(); renderUsers(); toast('Login deleted');

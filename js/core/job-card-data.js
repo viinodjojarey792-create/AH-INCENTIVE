@@ -1,9 +1,10 @@
 import { APP } from './state.js';
-import { money, norm, fmt, escapeHtml, parseDateFlexible, monthKeyOf, monthLabelOf, toast } from './utils.js';
+import { money, norm, fmt, escapeHtml, parseDateFlexible, monthKeyOf, monthLabelOf, toast, confirmDestructive } from './utils.js';
 import { scheduleSave } from './store.js';
 import { ensureMonth, targetWindowForMonth, monthKeyInWindow } from './months.js';
 import { parseCsvFile } from './import-handlers.js';
 import { renderDashboard } from './ui-shell.js';
+import { canDo, isAdmin } from './auth.js';
 
 // Shared "universal data" — job-card/revenue archive. Feeds Technician,
 // Advisor, Supervisor, Floor Manager and Workshop Manager achievement/target.
@@ -258,6 +259,7 @@ export function renderRevenue(containerId) {
   const mk = APP.meta.currentMonth;
   const m = ensureMonth(mk);
   const panel = document.getElementById(containerId);
+  const canUp = canDo('upload_data') || isAdmin();
   const archive = ensureJobCardArchive();
   const hasArchive = !!archive.fileName;
   const bucket = getJobCardBucket(mk);  // merged: main archive first, old data fallback
@@ -280,12 +282,14 @@ export function renderRevenue(containerId) {
     <div class="card">
       <div class="card-head"><strong>Job Card Log Sheet and Revenue</strong></div>
       <p class="kbd-note" style="margin-top:-6px; margin-bottom:14px;">Upload job card exports here — every month's achievement is read automatically from <b>Job Card Closed Date</b>. Each upload is merged into what's already stored: rows already seen (matched by Job Card Number) are skipped automatically, so re-uploading the same file or an overlapping export never double-counts. Achievement is also pulled from data you uploaded in the <b>Old Data Archive</b> tab, for any months this archive doesn't cover.</p>
+      ${canUp ? `
       <label class="upload-zone" for="jcFileInput">
         <div class="icon">↑</div>
         <div><b>Click to choose CSV</b> or drag it here</div>
         <div class="hint">Job_Card_Log_Sheet_and_Revenue.csv</div>
       </label>
       <input type="file" id="jcFileInput" accept=".csv" style="display:none;">
+      ` : `<div class="banner"><span>🔒</span><div>You don't have permission to upload data here. Contact an admin if you need this changed.</div></div>`}
       ${hasArchive ? `
         <div class="divider"></div>
         <div class="stat-row">
@@ -315,7 +319,7 @@ export function renderRevenue(containerId) {
               </div>
             </div>
           </div>` : (bucket ? `<div class="banner info"><span>✓</span><div>Every technician and advisor name in ${escapeHtml(m.label)}'s data matches a known employee alias.</div></div>` : '')}
-        <button class="btn ghost" id="jcClearBtn">Clear uploaded data</button>
+        ${canUp ? `<button class="btn ghost" id="jcClearBtn">Clear uploaded data</button>` : ''}
       ` : `<div class="empty-state" style="padding:24px 0 0 0;"><div class="icon">○</div>No revenue data uploaded yet.</div>`}
       <div class="divider"></div>
       <div class="field" style="max-width:220px;"><label>Workshop Manager Monthly Target ₹</label><input type="text" class="cell-input" style="width:160px;" id="rv-wmtarget" value="${m.special.wmTarget}"></div>
@@ -326,6 +330,8 @@ export function renderRevenue(containerId) {
     scheduleSave('months', () => APP.months);
     if (APP.meta.activeTab === 'dashboard') renderDashboard();
   });
+
+  if (!canUp) return;
 
   document.getElementById('jcFileInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
@@ -350,7 +356,7 @@ export function renderRevenue(containerId) {
 
   const clearBtn = document.getElementById('jcClearBtn');
   if (clearBtn) clearBtn.addEventListener('click', () => {
-    if (!confirm('Remove all uploaded revenue data? This affects every month, not just ' + m.label + '.')) return;
+    if (!confirmDestructive('Remove all uploaded revenue data? This affects every month, not just ' + m.label + '.')) return;
     APP.jobCardArchive = { byMonth: {}, fileName: null, uploadedAt: null, totalRowsInFile: 0, _seenRowKeys: {}, history: [] };
     scheduleSave('jobCardArchive', () => APP.jobCardArchive);
     renderRevenue(containerId);

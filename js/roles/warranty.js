@@ -1,10 +1,11 @@
 import { APP } from '../core/state.js';
-import { money, fmt, escapeHtml, toTitleCase, toast, activeEmployees, parseDateFlexible } from '../core/utils.js';
+import { money, fmt, norm, escapeHtml, toTitleCase, toast, activeEmployees, parseDateFlexible } from '../core/utils.js';
 import { scheduleSave } from '../core/store.js';
 import { ensureMonth, hrFor } from '../core/months.js';
 import { parseCsvFile } from '../core/import-handlers.js';
 import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
 import { registerRole } from '../core/role-registry.js';
+import { canDo, isAdmin } from '../core/auth.js';
 
 export function calcPerformance(emp, monthKey) {
   const m = ensureMonth(monthKey);
@@ -54,28 +55,65 @@ export function renderWarrantyDashboard(panel, mk, m) {
 /* =========================================================================
    Warranty Data tab (FSC / Warranty invoice log upload)
    ========================================================================= */
-function buildWarrantyDataSummary(rows, monthKey) {
+// Builds a unique key for a warranty invoice row so re-uploads never double-count.
+function warrantyRowKey(row) {
+  const idCol = row['FSC Invoice No'] || row['FSC Invoice Number'] || row['Warranty Invoice No'] ||
+    row['Warranty Invoice Number'] || row['Invoice No'] || row['Invoice Number'] ||
+    row['Job Card No'] || row['Job Card Number'];
+  if (idCol && String(idCol).trim()) return 'W:' + norm(String(idCol).trim());
+  return 'COMPOSITE:' + [(row['DATE']||'').trim(), money(row['FSC INVOCIE AMT']), money(row['WARRANTY INVOICE AMT'])].join('|');
+}
+
+// Merges newly-uploaded warranty rows into the given month in place. De-dup
+// (for the achievement-affecting current-month rows) is persisted on the
+// month itself (warrantySeenKeys), so a row already counted from a previous
+// upload is skipped even if it reappears in a later, overlapping export —
+// only genuinely new invoices get added to the running achievement total.
+// Manual edits to the Achievement fields are preserved; new uploads add on
+// top of whatever is already there rather than overwriting it.
+function mergeWarrantyData(m, rows, monthKey, fileName) {
+  const w = m.special.warranty;
+  if (!m.special.warrantySeenKeys) m.special.warrantySeenKeys = {};
+  if (!m.special.warrantyMeta) m.special.warrantyMeta = {};
+  if (!m.special.warrantyMeta.history) m.special.warrantyMeta.history = [];
+
   const [yr, mo] = monthKey.split('-').map(Number);
-  let fscAchievement = 0, warrantyAchievement = 0, rowsInMonth = 0;
+  let addedFsc = 0, addedWarranty = 0, added = 0, duplicateCount = 0;
   let fscBaseline = 0, warrantyBaseline = 0, baselineRows = 0;
+
   for (const row of rows) {
     const d = parseDateFlexible(row['DATE']);
     if (!d) continue;
-    const fsc = money(row['FSC INVOCIE AMT']);
-    const wr = money(row['WARRANTY INVOICE AMT']);
-    if (d.getFullYear() === yr && (d.getMonth() + 1) === mo) {
-      fscAchievement += fsc; warrantyAchievement += wr; rowsInMonth++;
+    const inMonth = d.getFullYear() === yr && (d.getMonth() + 1) === mo;
+    const inBaseline = d.getFullYear() === 2025 && (d.getMonth() + 1) >= 1 && (d.getMonth() + 1) <= 6;
+    if (!inMonth && !inBaseline) continue;
+
+    if (inMonth) {
+      const key = warrantyRowKey(row);
+      if (m.special.warrantySeenKeys[key]) { duplicateCount++; continue; }
+      m.special.warrantySeenKeys[key] = true;
+      addedFsc += money(row['FSC INVOCIE AMT']);
+      addedWarranty += money(row['WARRANTY INVOICE AMT']);
+      added++;
     }
-    if (d.getFullYear() === 2025 && d.getMonth() + 1 >= 1 && d.getMonth() + 1 <= 6) {
-      fscBaseline += fsc; warrantyBaseline += wr; baselineRows++;
+    if (inBaseline) {
+      fscBaseline += money(row['FSC INVOCIE AMT']);
+      warrantyBaseline += money(row['WARRANTY INVOICE AMT']);
+      baselineRows++;
     }
   }
-  return {
-    fscAchievement, warrantyAchievement, rowsInMonth,
-    fscTargetSuggested: baselineRows ? fscBaseline / 6 : null,
-    warrantyTargetSuggested: baselineRows ? warrantyBaseline / 6 : null,
-    totalRowsInFile: rows.length
-  };
+
+  w.fscAchievement = money(w.fscAchievement) + addedFsc;
+  w.warrantyAchievement = money(w.warrantyAchievement) + addedWarranty;
+  if (!w.fscTarget && baselineRows) w.fscTarget = Math.round(fscBaseline / 6);
+  if (!w.warrantyTarget && baselineRows) w.warrantyTarget = Math.round(warrantyBaseline / 6);
+
+  m.special.warrantyMeta.fileName = fileName;
+  m.special.warrantyMeta.uploadedAt = new Date().toISOString();
+  m.special.warrantyMeta.rowsInMonth = (m.special.warrantyMeta.rowsInMonth || 0) + added;
+  m.special.warrantyMeta.history.push({ fileName, at: m.special.warrantyMeta.uploadedAt, added, duplicatesSkipped: duplicateCount });
+
+  return { added, duplicatesSkipped: duplicateCount };
 }
 
 export function renderWarrantyDataSection(containerId) {
@@ -86,19 +124,29 @@ export function renderWarrantyDataSection(containerId) {
   const wMeta = m.special.warrantyMeta || {};
   const warrantyEmps = activeEmployees(false).filter(e => e.category === 'WARRANTY');
   const panel = document.getElementById(containerId);
+  const canUp = canDo('upload_data') || isAdmin();
 
   panel.innerHTML = `
     <div class="card">
       <div class="card-head"><strong>Warranty Data — ${escapeHtml(m.label)}</strong></div>
       ${warrantyEmps.map(e => `<div class="kbd-note" style="margin-bottom:8px;">${escapeHtml(toTitleCase(e.nameHR))}</div>`).join('') || '<div class="kbd-note" style="margin-bottom:8px;">No employee is currently set to the Warranty category.</div>'}
-      <p class="kbd-note" style="margin-top:0; margin-bottom:14px;">Upload the FSC / Warranty invoice log — rows dated in ${escapeHtml(m.label)} are summed into Achievement automatically. Target stays as a fixed figure you set once (or accept the suggested 6-month average if the file includes Jan–Jun 2025 history).</p>
+      <p class="kbd-note" style="margin-top:0; margin-bottom:14px;">Upload the FSC / Warranty invoice log — rows dated in ${escapeHtml(m.label)} are added into Achievement automatically. Each upload is merged into what's already stored: invoices already counted (matched by invoice/job card number, or by date+amounts if the file has no ID column) are skipped automatically, so re-uploading the same file or an overlapping export never double-counts. Target stays as a fixed figure you set once (or accept the suggested 6-month average if the file includes Jan–Jun 2025 history).</p>
+      ${canUp ? `
       <label class="upload-zone" for="wdFileInput">
         <div class="icon">↑</div>
         <div><b>Click to choose CSV</b> or drag it here</div>
         <div class="hint">WARRANTY_DATA.csv</div>
       </label>
       <input type="file" id="wdFileInput" accept=".csv" style="display:none;">
-      ${wMeta.fileName ? `<div class="footer-note">Last uploaded: ${escapeHtml(wMeta.fileName)} — ${wMeta.rowsInMonth ?? 0} row(s) in ${escapeHtml(m.label)}.</div>` : ''}
+      ` : `<div class="banner"><span>🔒</span><div>You don't have permission to upload data here. Contact an admin if you need this changed.</div></div>`}
+      ${wMeta.fileName ? `<div class="footer-note">Last uploaded: ${escapeHtml(wMeta.fileName)} — ${wMeta.rowsInMonth ?? 0} total row(s) counted for ${escapeHtml(m.label)}.</div>` : ''}
+      ${wMeta.history && wMeta.history.length > 1 ? `
+      <div style="margin-top:8px;">
+        <div class="kbd-note" style="margin-bottom:4px;">Upload history (${wMeta.history.length} uploads):</div>
+        ${wMeta.history.slice(-5).reverse().map(h =>
+          `<div class="kbd-note">• ${new Date(h.at).toLocaleString()} — <b>+${h.added}</b> added, ${h.duplicatesSkipped} duplicates skipped (${escapeHtml(h.fileName)})</div>`
+        ).join('')}
+      </div>` : ''}
       <div class="divider"></div>
       <div class="grid-2">
         <div class="field"><label>FSC Target ₹</label><input type="text" class="cell-input" style="width:140px;" id="sp-fscT" value="${w.fscTarget}"></div>
@@ -131,24 +179,20 @@ export function renderWarrantyDataSection(containerId) {
     if (APP.meta.activeTab === 'dashboard') renderDashboard();
   });
 
-  document.getElementById('wdFileInput').addEventListener('change', async (e) => {
+  document.getElementById('wdFileInput')?.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     try {
       const rows = await parseCsvFile(file);
-      const summary = buildWarrantyDataSummary(rows, mk);
-      w.fscAchievement = summary.fscAchievement;
-      w.warrantyAchievement = summary.warrantyAchievement;
-      if (!w.fscTarget && summary.fscTargetSuggested) w.fscTarget = Math.round(summary.fscTargetSuggested);
-      if (!w.warrantyTarget && summary.warrantyTargetSuggested) w.warrantyTarget = Math.round(summary.warrantyTargetSuggested);
-      m.special.warrantyMeta = { fileName: file.name, uploadedAt: new Date().toISOString(), rowsInMonth: summary.rowsInMonth };
+      const result = mergeWarrantyData(m, rows, mk, file.name);
       scheduleSave('months', () => APP.months);
       renderWarrantyDataSection(containerId);
       if (APP.meta.activeTab === 'dashboard') renderDashboard();
-      if (summary.rowsInMonth === 0) {
+      if (result.added === 0 && result.duplicatesSkipped === 0) {
         toast(`No warranty rows dated in ${m.label} were found in this file`, true);
       } else {
-        toast(`Loaded ${summary.rowsInMonth} warranty row(s) for ${m.label}`);
+        const dupMsg = result.duplicatesSkipped > 0 ? ` (${result.duplicatesSkipped} duplicate rows already on file, skipped)` : '';
+        toast(`${result.added} new warranty row(s) added for ${m.label}${dupMsg}`);
       }
     } catch (err) {
       console.error(err);

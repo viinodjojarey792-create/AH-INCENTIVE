@@ -1,5 +1,5 @@
 import { APP, CATEGORY_LABELS } from '../state.js';
-import { money, norm, escapeHtml, toTitleCase, uid, toast, downloadFile, empById } from '../utils.js';
+import { money, norm, escapeHtml, toTitleCase, uid, toast, downloadFile, empById, confirmDestructive } from '../utils.js';
 import { scheduleSave } from '../store.js';
 import { canDo, isAdmin } from '../auth.js';
 import { openModal, closeModal, rerenderActiveTab } from '../ui-shell.js';
@@ -291,7 +291,7 @@ export function renderHiriseMapTab() {
     // Delete row
     panel.querySelectorAll('.hr-del-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (!confirm('Remove this HiRise mapping?')) return;
+        if (!confirmDestructive('Remove this HiRise mapping?')) return;
         delete APP.hiriseMap[btn.dataset.hrkey];
         scheduleSave('hiriseMap', () => APP.hiriseMap);
         renderHiriseMapTab();
@@ -465,7 +465,7 @@ export function autoMapReportingChain() {
   // ADVISOR      -> L1=WM, L2=null, L3=null, L4=null
   // WM           -> L1=null, L2=null, L3=null, L4=null (reports to MD directly)
   // WARRANTY/BODYSHOP/others -> L1=WM, L2=null, L3=null, L4=null
-  if (!confirm('This will auto-fill the reporting chain for all active employees based on their Category and assigned Supervisor. Any entries you have already set manually will be overwritten. Continue?')) return;
+  if (!confirmDestructive('This will auto-fill the reporting chain for all active employees based on their Category and assigned Supervisor. Any entries you have already set manually will be overwritten. Continue?')) return;
 
   const narode = APP.employees.find(e => e.category === 'NARODE' && e.status === 'ACTIVE');
   const wm     = APP.employees.find(e => e.category === 'WM'     && e.status === 'ACTIVE');
@@ -623,7 +623,7 @@ export function openEmployeeEditor(empId) {
   });
   if (!isNew) {
     document.getElementById('mf-delete').addEventListener('click', () => {
-      if (!confirm('Delete ' + emp.nameHR + '? This cannot be undone.')) return;
+      if (!confirmDestructive('Delete ' + emp.nameHR + '? This cannot be undone.')) return;
       APP.employees = APP.employees.filter(e => e.id !== emp.id);
       scheduleSave('employees', () => APP.employees);
       closeModal();

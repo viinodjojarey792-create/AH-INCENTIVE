@@ -1,5 +1,5 @@
 import { APP, CATEGORY_LABELS } from './state.js';
-import { money, norm, fmt, uid, escapeHtml, toTitleCase, toast, parseMonthKey, monthLabelOf, activeEmployees, empById } from './utils.js';
+import { money, norm, fmt, uid, escapeHtml, toTitleCase, toast, parseMonthKey, monthLabelOf, activeEmployees, empById, confirmDestructive } from './utils.js';
 import { scheduleSave } from './store.js';
 import { ensureMonth, hrFor } from './months.js';
 import { canDo, isAdmin } from './auth.js';
@@ -16,46 +16,64 @@ export function parseCsvFile(file) {
   });
 }
 
-export function buildComplaintsSummary(rows, fileName) {
-  const counts = {};
-  let filteredRows = 0;
+// Builds a unique key for a complaint row so re-uploads never double-count.
+// Prefers an explicit complaint/ticket/docket ID column if present; falls
+// back to a composite of name + status + whatever date-like column exists.
+function complaintRowKey(row) {
+  const idCol = row['Complaint No'] || row['Complaint Number'] || row['Complaint No.'] ||
+    row['Ticket No'] || row['Ticket Number'] || row['SR NO'] || row['Sr No'] ||
+    row['Docket No'] || row['Docket Number'] || row['Complaint ID'];
+  if (idCol && String(idCol).trim()) return 'C:' + norm(String(idCol).trim());
+  return 'COMPOSITE:' + [
+    norm(row['NAME AS PER HR SHEET']||''), norm(row['Status']||''),
+    norm(row['Complaint Date']||row['Date']||row['TECHNICIAN NAME']||'')
+  ].join('|');
+}
+
+// Merges newly-uploaded HMSI complaint rows into the given month in place.
+// De-dup is persisted on the month itself (complaintsSeenKeys), so a row
+// already counted from a previous upload is skipped even if it reappears in
+// a later, overlapping export — only genuinely new qualifying complaints get
+// added. Only rows with status "Action Completed" or "Closed" count.
+export function mergeComplaints(m, rows, fileName) {
+  if (!m.complaintsSeenKeys) m.complaintsSeenKeys = {};
+  if (!m.complaints) m.complaints = {};
+  if (!m.complaintsMeta) m.complaintsMeta = {};
+  if (!m.complaintsMeta.history) m.complaintsMeta.history = [];
+
   const okStatus = new Set(['ACTION COMPLETED', 'CLOSED']);
-  const unmatchedBlank = [];
-  for (const row of rows) {
-    const status = (row['Status'] || '').trim().toUpperCase();
-    if (!okStatus.has(status)) continue;
-    const hrName = norm(row['NAME AS PER HR SHEET']);
-    if (!hrName) { unmatchedBlank.push(row['TECHNICIAN NAME'] || ''); continue; }
-    filteredRows++;
-    counts[hrName] = (counts[hrName] || 0) + 1;
-  }
-  return { counts, fileName, uploadedAt: new Date().toISOString(), totalRowsInFile: rows.length, filteredRows, unmatchedBlankCount: unmatchedBlank.length };
-}
-
-export function findUnmatchedComplaintNames(counts) {
-  const aliasSet = new Set();
-  for (const e of APP.employees) (e.hiriseAliases || []).forEach(a => aliasSet.add(norm(a)));
-  const nameSet = new Set(APP.employees.map(e => norm(e.nameHR)));
-  const unmatched = [];
-  for (const key of Object.keys(counts)) {
-    if (!aliasSet.has(key) && !nameSet.has(key)) unmatched.push({ name: key, count: counts[key] });
-  }
-  unmatched.sort((a, b) => b.count - a.count);
-  return unmatched;
-}
-
-export function applyComplaintsToEmployees(monthKey, counts) {
-  const m = ensureMonth(monthKey);
   const byAlias = {}, byHrName = {};
   for (const e of APP.employees) {
     (e.hiriseAliases || []).forEach(a => byAlias[norm(a)] = e.id);
     byHrName[norm(e.nameHR)] = e.id;
   }
-  m.complaints = {};
-  for (const key of Object.keys(counts)) {
-    const empId = byAlias[key] || byHrName[key];
-    if (empId) m.complaints[empId] = (m.complaints[empId] || 0) + counts[key];
+
+  let added = 0, duplicateCount = 0, unmatchedBlankCount = 0;
+  const unmatchedNames = {};
+  for (const row of rows) {
+    const status = (row['Status'] || '').trim().toUpperCase();
+    if (!okStatus.has(status)) continue;
+    const hrName = norm(row['NAME AS PER HR SHEET']);
+    if (!hrName) { unmatchedBlankCount++; continue; }
+
+    const key = complaintRowKey(row);
+    if (m.complaintsSeenKeys[key]) { duplicateCount++; continue; }
+    m.complaintsSeenKeys[key] = true;
+    added++;
+
+    const empId = byAlias[hrName] || byHrName[hrName];
+    if (empId) m.complaints[empId] = (m.complaints[empId] || 0) + 1;
+    else unmatchedNames[hrName] = (unmatchedNames[hrName] || 0) + 1;
   }
+
+  m.complaintsMeta.fileName = fileName;
+  m.complaintsMeta.uploadedAt = new Date().toISOString();
+  m.complaintsMeta.history.push({ fileName, at: m.complaintsMeta.uploadedAt, added, duplicatesSkipped: duplicateCount });
+
+  const unmatched = Object.keys(unmatchedNames)
+    .map(name => ({ name, count: unmatchedNames[name] }))
+    .sort((a, b) => b.count - a.count);
+  return { added, duplicatesSkipped: duplicateCount, unmatchedBlankCount, unmatched };
 }
 
 // Build a lookup of employees by both their full HR name and every Hirise alias.
@@ -524,7 +542,7 @@ function paintAttendanceRows() {
     tbody.querySelectorAll('.del-emp-btn').forEach(btn => btn.addEventListener('click', ev => {
       const emp = empById(ev.target.closest('[data-delid]').dataset.delid);
       if (!emp) return;
-      if (!confirm('Delete ' + emp.nameHR + ' from employee list? This cannot be undone.')) return;
+      if (!confirmDestructive('Delete ' + emp.nameHR + ' from employee list? This cannot be undone.')) return;
       APP.employees = APP.employees.filter(e => e.id !== emp.id);
       scheduleSave('employees', () => APP.employees);
       paintAttendanceRows();
@@ -606,14 +624,21 @@ export function renderComplaints(containerId) {
   panel.innerHTML = `
     <div class="card">
       <div class="card-head"><strong>HMSI Complaints — ${escapeHtml(m.label)}</strong></div>
-      <p class="kbd-note" style="margin-top:-6px; margin-bottom:14px;">Upload the HMSI complaint export. Only rows with status <b>Action Completed</b> or <b>Closed</b> are counted, grouped by the "Name as per HR Sheet" column. You can also edit any count by hand below.</p>
+      <p class="kbd-note" style="margin-top:-6px; margin-bottom:14px;">Upload the HMSI complaint export. Only rows with status <b>Action Completed</b> or <b>Closed</b> are counted, grouped by the "Name as per HR Sheet" column. Each upload is merged into what's already stored: complaints already counted (matched by complaint/ticket ID, or by name+status+date if the file has no ID column) are skipped automatically, so re-uploading the same file or an overlapping export never double-counts. You can also edit any count by hand below.</p>
       <label class="upload-zone" for="cpFileInput">
         <div class="icon">↑</div>
         <div><b>Click to choose CSV</b> or drag it here</div>
         <div class="hint">HMSI-COMPLAIN.csv</div>
       </label>
       <input type="file" id="cpFileInput" accept=".csv" style="display:none;">
-      ${meta.fileName ? `<div class="footer-note">Last uploaded: ${escapeHtml(meta.fileName)} — ${meta.filteredRows ?? '?'} qualifying complaint(s) found.</div>` : ''}
+      ${meta.fileName ? `<div class="footer-note">Last uploaded: ${escapeHtml(meta.fileName)} ${meta.uploadedAt ? '(on ' + new Date(meta.uploadedAt).toLocaleDateString('en-GB') + ')' : ''}</div>` : ''}
+      ${meta.history && meta.history.length > 1 ? `
+      <div style="margin-top:8px;">
+        <div class="kbd-note" style="margin-bottom:4px;">Upload history (${meta.history.length} uploads):</div>
+        ${meta.history.slice(-5).reverse().map(h =>
+          `<div class="kbd-note">• ${new Date(h.at).toLocaleString()} — <b>+${h.added}</b> added, ${h.duplicatesSkipped} duplicates skipped (${escapeHtml(h.fileName)})</div>`
+        ).join('')}
+      </div>` : ''}
       <div id="cpUnmatchedWrap"></div>
       <div class="divider"></div>
       <div class="table-scroll">
@@ -633,18 +658,16 @@ export function renderComplaints(containerId) {
     if (!file) return;
     try {
       const rows = await parseCsvFile(file);
-      const summary = buildComplaintsSummary(rows, file.name);
-      const unmatched = findUnmatchedComplaintNames(summary.counts);
-      m.complaintsMeta = { fileName: summary.fileName, uploadedAt: summary.uploadedAt, unmatched: unmatched.map(u => u.name) };
-      applyComplaintsToEmployees(mk, summary.counts);
+      const result = mergeComplaints(m, rows, file.name);
       scheduleSave('months', () => APP.months);
       renderComplaints(containerId);
       if (APP.meta.activeTab === 'dashboard') renderDashboard();
-      toast(`Matched ${summary.filteredRows} qualifying complaint(s)`);
-      if (unmatched.length) {
+      const dupMsg = result.duplicatesSkipped > 0 ? ` (${result.duplicatesSkipped} duplicate rows already on file, skipped)` : '';
+      toast(`${result.added} new complaint(s) added${dupMsg}`);
+      if (result.unmatched.length) {
         document.getElementById('cpUnmatchedWrap').innerHTML = `
-          <div class="banner"><span>⚠</span><div><b>${unmatched.length} name(s) didn't match any employee</b> — their complaints were not counted.
-          <div style="margin-top:8px;">${unmatched.map(u => `<div class="match-row"><span class="name">${escapeHtml(u.name)}</span><span class="kbd-note">${u.count} complaint(s)</span></div>`).join('')}</div></div></div>`;
+          <div class="banner"><span>⚠</span><div><b>${result.unmatched.length} name(s) didn't match any employee</b> — their complaints were not counted.
+          <div style="margin-top:8px;">${result.unmatched.map(u => `<div class="match-row"><span class="name">${escapeHtml(u.name)}</span><span class="kbd-note">${u.count} complaint(s)</span></div>`).join('')}</div></div></div>`;
       }
     } catch (err) {
       console.error(err);

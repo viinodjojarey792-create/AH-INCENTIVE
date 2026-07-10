@@ -1,5 +1,5 @@
 import { APP } from '../core/state.js';
-import { escapeHtml, toTitleCase, fmt, norm, toast, uid, parseDateFlexible, monthKeyOf, activeEmployees } from '../core/utils.js';
+import { escapeHtml, toTitleCase, fmt, norm, toast, uid, parseDateFlexible, monthKeyOf, activeEmployees, confirmDestructive } from '../core/utils.js';
 import { hrFor } from '../core/months.js';
 import { canDo, isAdmin } from '../core/auth.js';
 import { SB } from '../core/config.js';
@@ -169,7 +169,7 @@ function openCustomerEditor(custId) {
 
   if (!isNew) {
     document.getElementById('cf-delete').addEventListener('click', async () => {
-      if (!confirm('Delete customer record for ' + (c.name||'this customer') + '? This cannot be undone.')) return;
+      if (!confirmDestructive('Delete customer record for ' + (c.name||'this customer') + '? This cannot be undone.')) return;
       await deleteCustomer(c.id);
       customerCache = customerCache.filter(x => x.id !== c.id);
       closeModal(); paintCustomerRows(true); toast('Customer deleted');

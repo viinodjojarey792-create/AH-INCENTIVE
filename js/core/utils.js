@@ -103,3 +103,14 @@ export function downloadFile(filename, content, mime) {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
+
+// Requires 3 separate confirmations before a destructive action (delete/clear/
+// replace) is allowed to proceed. Any single "Cancel" stops it immediately —
+// this is a deliberate friction gate against accidental data loss, not a
+// formality: it takes real, repeated intent to get through all three steps.
+export function confirmDestructive(message) {
+  if (!confirm(`${message}\n\n(Step 1 of 3) Do you want to proceed?`)) return false;
+  if (!confirm(`${message}\n\n(Step 2 of 3) Please confirm again — this cannot be undone.`)) return false;
+  if (!confirm(`${message}\n\n(Step 3 of 3) FINAL confirmation — click OK to permanently proceed.`)) return false;
+  return true;
+}

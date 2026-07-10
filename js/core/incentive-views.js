@@ -1,5 +1,5 @@
 import { APP, CATEGORY_LABELS } from './state.js';
-import { escapeHtml, norm, toTitleCase, fmt, fmtPct, csvSafe, downloadFile, toast, empById, money } from './utils.js';
+import { escapeHtml, norm, toTitleCase, fmt, fmtPct, csvSafe, downloadFile, toast, empById, money, confirmDestructive } from './utils.js';
 import { scheduleSave } from './store.js';
 import { ensureMonth } from './months.js';
 import { calcAllFinalRows } from './incentive-engine.js';
@@ -344,7 +344,7 @@ export function renderPerformanceIncentive() {
     document.querySelectorAll('[data-delrecord]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const emp = empById(e.target.closest('[data-delrecord]').dataset.delrecord);
-        if (!confirm('Delete ' + emp.nameHR + '? This cannot be undone.')) return;
+        if (!confirmDestructive('Delete ' + emp.nameHR + '? This cannot be undone.')) return;
         APP.employees = APP.employees.filter(x => x.id !== emp.id);
         scheduleSave('employees', () => APP.employees);
         renderPerformanceIncentive();

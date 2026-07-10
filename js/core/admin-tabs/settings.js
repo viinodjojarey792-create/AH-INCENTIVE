@@ -1,5 +1,5 @@
 import { APP, CATEGORY_LABELS } from '../state.js';
-import { money, escapeHtml, fmt, toast, downloadFile, norm, parseDateFlexible, monthKeyOf, uid } from '../utils.js';
+import { money, escapeHtml, fmt, toast, downloadFile, norm, parseDateFlexible, monthKeyOf, uid, confirmDestructive } from '../utils.js';
 import { scheduleSave } from '../store.js';
 import { isAdmin } from '../auth.js';
 import { ensureMonth, sortedMonthKeys } from '../months.js';
@@ -380,7 +380,7 @@ export function renderGoogleSheetsPanel() {
     document.querySelector(`[data-gs-paste-replace="${s.key}"]`)?.addEventListener('click', async () => {
       const text = document.getElementById(`gs-paste-${s.key}`).value.trim();
       if (!text) { statusEl().textContent = '⚠ Paste your Google Sheet data in the box above first'; statusEl().style.color='var(--bad)'; return; }
-      if (!confirm(`Replace ALL ${s.label} data with pasted data? Cannot be undone.`)) return;
+      if (!confirmDestructive(`Replace ALL ${s.label} data with pasted data? Cannot be undone.`)) return;
       const rows = parsePasted(text);
       await processParsedRows(s.key, rows, 'replace', statusEl());
     });
@@ -397,7 +397,7 @@ export function renderGoogleSheetsPanel() {
       await runGsImport(s.key, 'merge', statusEl());
     });
     document.querySelector(`[data-gs-replace="${s.key}"]`)?.addEventListener('click', async () => {
-      if (!confirm(`Replace ALL ${s.label} data? Cannot be undone.`)) return;
+      if (!confirmDestructive(`Replace ALL ${s.label} data? Cannot be undone.`)) return;
       const url = document.getElementById(`gs-link-${s.key}`).value.trim();
       if (url) saveGsLink(s.key, url);
       await runGsImport(s.key, 'replace', statusEl());
@@ -628,7 +628,7 @@ export function importFullBackup(e) {
     try {
       const data = JSON.parse(reader.result);
       if (!data.employees || !data.months || !data.settings) throw new Error('missing fields');
-      if (!confirm('This will replace ALL current employees, month data, and settings with the backup file. Continue?')) return;
+      if (!confirmDestructive('This will replace ALL current employees, month data, and settings with the backup file. Continue?')) return;
       APP.employees = data.employees; APP.months = data.months; APP.settings = data.settings;
       APP.jobCardArchive = data.jobCardArchive || { byMonth: {}, fileName: null, uploadedAt: null, totalRowsInFile: 0 };
       APP.reportingChain = data.reportingChain || {};
@@ -648,7 +648,7 @@ export function importFullBackup(e) {
   reader.readAsText(file);
 }
 export function resetEmployeesToSeed() {
-  if (!confirm('Reset all employees to the original seed list? Month data (attendance, revenue, complaints, rates) will NOT be affected, but any manually added employees or alias changes will be lost.')) return;
+  if (!confirmDestructive('Reset all employees to the original seed list? Month data (attendance, revenue, complaints, rates) will NOT be affected, but any manually added employees or alias changes will be lost.')) return;
   APP.employees = JSON.parse(JSON.stringify(SEED_EMPLOYEES));
   scheduleSave('employees', () => APP.employees, 50);
   rerenderActiveTab();
