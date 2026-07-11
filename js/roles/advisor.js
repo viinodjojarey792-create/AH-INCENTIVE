@@ -4,7 +4,7 @@ import { scheduleSave } from '../core/store.js';
 import { ensureMonth, hrFor, amcVasFor } from '../core/months.js';
 import { jobCardLookupAdvisor } from '../core/job-card-data.js';
 import { parseCsvFile } from '../core/import-handlers.js';
-import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
+import { dashBack, dashBasis, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
 import { registerRole } from '../core/role-registry.js';
 import { canDo, isAdmin } from '../core/auth.js';
 
@@ -114,7 +114,8 @@ export function renderAdvisorDashboard(panel, mk, m) {
           <td class="num">${r.hr.lateMarks}</td>
         </tr>`;
       }).join('') || '<tr><td colspan="12"><div class="empty-state">No advisors found.</div></td></tr>'}
-      </tbody></table></div></div>`;
+      </tbody></table></div></div>
+    ${dashBasis('Achievement = Job Card revenue matched by Service Advisor. Total Incentive above requires BOTH the vehicle-count and avg-revenue/vehicle targets to be met — if either is missed, incentive is ₹0 for that advisor.')}`;
   document.getElementById('dashBackBtn').onclick = () => { setActiveDashboard(null); renderDashboard(); };
 }
 

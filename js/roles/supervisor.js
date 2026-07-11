@@ -1,7 +1,7 @@
 import { APP } from '../core/state.js';
 import { fmt, escapeHtml, activeEmployees } from '../core/utils.js';
 import { jobCardLookupTech, getTechnicianTarget } from '../core/job-card-data.js';
-import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
+import { dashBack, dashBasis, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
 import { registerRole } from '../core/role-registry.js';
 // Technician sub-rows below need the category-dispatching calcPerformance
 // (this module's own calcPerformance only implements the SUPERVISOR branch).
@@ -70,7 +70,8 @@ export function renderSupervisorDashboard(panel, mk, m) {
           }).join('') || '<tr><td colspan="4" style="padding:8px;color:var(--ink-soft);">No technicians assigned</td></tr>'}</tbody>
         </table>
       </div>`;
-    }).join('') || '<div class="banner"><span>⚠</span><div>No supervisors found. Assign Supervisor category in Employees tab.</div></div>'}`;
+    }).join('') || '<div class="banner"><span>⚠</span><div>No supervisors found. Assign Supervisor category in Employees tab.</div></div>'}
+    ${dashBasis('Target/Achievement for each supervisor = sum of the Job Card target/revenue of technicians whose Supervisor field (Employees tab) points to them. Incentive Earned = eligibility/rate% set on the Incentive Rates tab.')}`;
   document.getElementById('dashBackBtn').onclick = () => { setActiveDashboard(null); renderDashboard(); };
 }
 

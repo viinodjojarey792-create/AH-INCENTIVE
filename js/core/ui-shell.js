@@ -207,6 +207,12 @@ export function dashBack(panel) {
   return `<button class="btn secondary" id="dashBackBtn" style="margin-bottom:16px;font-size:12px;">← All Dashboards</button>`;
 }
 
+// Thin footer line explaining how the figures above were calculated —
+// appended at the bottom of a dashboard, wherever a basis explanation applies.
+export function dashBasis(text) {
+  return `<div class="kbd-note" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line);">ℹ Basis: ${text}</div>`;
+}
+
 export function renderDashboard() {
   const mk = APP.meta.currentMonth;
   const m = ensureMonth(mk);

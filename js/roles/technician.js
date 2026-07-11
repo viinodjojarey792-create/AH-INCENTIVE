@@ -4,7 +4,7 @@ import { getJobCardBucket, hasAnyJobCardData, jobCardLookupTech, getTechnicianTa
 import { calcEarnedPerformance } from '../core/incentive-engine.js';
 import { calcAllFinalRows } from '../core/incentive-engine.js';
 import { hrFor } from '../core/months.js';
-import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
+import { dashBack, dashBasis, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
 import { registerRole } from '../core/role-registry.js';
 
 export function calcPerformance(emp, monthKey) {
@@ -81,7 +81,8 @@ export function renderTechnicianDashboard(panel, mk, m) {
         </tr>`;
       }).join('') || '<tr><td colspan="13"><div class="empty-state">No technicians found.</div></td></tr>'}
       </tbody>
-    </table></div></div>`;
+    </table></div></div>
+    ${dashBasis('Target = 6-month prior-window average (or admin override). Achievement = Job Card revenue (Labour + Parts + Lubes, GST excluded) matched by Technician Name. Performance ₹ = eligibility/rate% set on the Incentive Rates tab.')}`;
   document.getElementById('dashBackBtn').onclick = () => { setActiveDashboard(null); renderDashboard(); };
 }
 

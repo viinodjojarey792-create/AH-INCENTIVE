@@ -1,6 +1,6 @@
 import { money, fmt, escapeHtml, activeEmployees } from '../core/utils.js';
 import { ensureMonth, hrFor } from '../core/months.js';
-import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
+import { dashBack, dashBasis, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
 import { registerRole } from '../core/role-registry.js';
 import { calcEarnedPerformance } from '../core/incentive-engine.js';
 
@@ -42,7 +42,8 @@ export function renderSparePartsDashboard(panel, mk, m) {
             <td class="num"><b>${fmt(r.p.earned)}</b></td></tr>`;
         }).join('') || '<tr><td colspan="7"><div class="empty-state">No Store Manager found. Set category = Store Manager in Employees tab.</div></td></tr>'}
         </tbody></table></div></div>
-    ${!otc.total ? '<div class="banner" style="margin-top:12px;"><span>⚠</span><div>No OTC data for this month. Upload the Sales Tax CSV via <b>Sales Tax - OTC</b> tab.</div></div>' : ''}`;
+    ${!otc.total ? '<div class="banner" style="margin-top:12px;"><span>⚠</span><div>No OTC data for this month. Upload the Sales Tax CSV via <b>Sales Tax - OTC</b> tab.</div></div>' : ''}
+    ${dashBasis('Achievement = OTC Revenue only (Basic Price, Order Type = OTC Sales, Part Category = STD - Standard, excl. tax). Incentive Earned = eligibility/rate% set on the Incentive Rates tab.')}`;
   document.getElementById('dashBackBtn').onclick = () => { setActiveDashboard(null); renderDashboard(); };
 }
 

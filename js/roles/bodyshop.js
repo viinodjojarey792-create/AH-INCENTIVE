@@ -4,7 +4,7 @@ import { scheduleSave } from '../core/store.js';
 import { ensureMonth, hrFor } from '../core/months.js';
 import { jobCardLookupTech } from '../core/job-card-data.js';
 import { isAdmin, canDo } from '../core/auth.js';
-import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
+import { dashBack, dashBasis, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
 import { registerRole } from '../core/role-registry.js';
 
 export function calcPerformance(emp, monthKey) {
@@ -169,7 +169,8 @@ export function renderBodyshopDashboard(panel, mk, m) {
           '<td style="font-size:10px;color:var(--ink-soft);max-width:180px;">' + escapeHtml(r.ep.incentiveNote||'—') + '</td>' +
         '</tr>';
       }).join('') || '<tr><td colspan="11"><div class="empty-state">No bodyshop staff found.</div></td></tr>'}
-      </tbody></table></div></div>`;
+      </tbody></table></div></div>
+    ${dashBasis('Achievement = Job Card revenue (Labour + Parts + Lubes, GST excluded) matched by Technician Name — individual total for Technicians, combined Bodyshop-dept total for Executives. Incentive is a tiered flat-rate per the criteria above, not eligibility/rate%-based.')}`;
   document.getElementById('dashBackBtn').onclick = () => { setActiveDashboard(null); renderDashboard(); };
   if (canEditTarget) {
     if (!b.perEmpTarget) b.perEmpTarget = {};

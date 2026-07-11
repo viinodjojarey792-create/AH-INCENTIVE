@@ -3,7 +3,7 @@ import { money, fmt, norm, escapeHtml, toTitleCase, toast, activeEmployees, pars
 import { scheduleSave } from '../core/store.js';
 import { ensureMonth, hrFor } from '../core/months.js';
 import { parseCsvFile } from '../core/import-handlers.js';
-import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
+import { dashBack, dashBasis, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
 import { registerRole } from '../core/role-registry.js';
 import { canDo, isAdmin } from '../core/auth.js';
 import { calcEarnedPerformance as calcEarnedPerformanceCore } from '../core/incentive-engine.js';
@@ -49,7 +49,8 @@ export function renderWarrantyDashboard(panel, mk, m) {
           <td class="num">${r.hr.actualAbsentee}</td><td class="num">${r.hr.lateMarks}</td>
           <td class="num"><b>${fmt(r.p.earned)}</b></td></tr>`;
       }).join('') || '<tr><td colspan="9"><div class="empty-state">No warranty staff found. Set category = Warranty in Employees tab.</div></td></tr>'}
-      </tbody></table></div></div>`;
+      </tbody></table></div></div>
+    ${dashBasis('Target/Achievement = FSC + Warranty invoice amounts on the Warranty Data tab (auto-added from uploads, or entered manually). Incentive = flat amount if "Target achieved" is checked for the month, else ₹0 — not eligibility/rate%-based.')}`;
   document.getElementById('dashBackBtn').onclick = () => { setActiveDashboard(null); renderDashboard(); };
 }
 

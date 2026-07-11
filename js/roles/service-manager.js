@@ -3,7 +3,7 @@ import { money, fmt, escapeHtml, toTitleCase, activeEmployees } from '../core/ut
 import { getJobCardBucket } from '../core/job-card-data.js';
 import { ensureMonth } from '../core/months.js';
 import { calcAllFinalRows, calcPerformance as calcPerformanceAny, calcEarnedPerformance } from '../core/incentive-engine.js';
-import { dashBack, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
+import { dashBack, dashBasis, setActiveDashboard, renderDashboard } from '../core/ui-shell.js';
 import { registerRole } from '../core/role-registry.js';
 
 export function calcPerformance(emp, monthKey) {
@@ -75,7 +75,8 @@ export function renderServiceManagerDashboard(panel, mk, m) {
             <td class="num" style="text-align:center;color:${col};font-weight:700;">${pct}%</td>
             <td class="num" style="text-align:center;"><b>${fmt(p.earned)}</b></td></tr>`;
         }).join('') || '<tr><td colspan="7"><div class="empty-state">No Service Manager found. Set category = Service Manager in Employees tab.</div></td></tr>'}
-        </tbody></table></div></div>`;
+        </tbody></table></div></div>
+    ${dashBasis('Achievement = Job Card Revenue (Labour + Parts + Lubes, GST excluded, whole workshop) + OTC Revenue (Basic Price, Order Type = OTC Sales, Part Category = STD - Standard). Incentive Earned = eligibility/rate% set on the Incentive Rates tab.')}`;
   document.getElementById('dashBackBtn').onclick = () => { setActiveDashboard(null); renderDashboard(); };
 }
 
