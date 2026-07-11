@@ -58,6 +58,12 @@ export function mergeJobCardArchive(archive, rows, fileName) {
 
     const mk = monthKeyOf(d);
     if (!archive.byMonth[mk]) archive.byMonth[mk] = { byTech: {}, byAdvisor: {}, workshop: { total: 0, count: 0 } };
+    const monthBucket = archive.byMonth[mk];
+    const existingMonthRange = monthBucket.dateRange;
+    monthBucket.dateRange = {
+      from: (existingMonthRange && new Date(existingMonthRange.from) < d) ? existingMonthRange.from : d.toISOString(),
+      to:   (existingMonthRange && new Date(existingMonthRange.to)   > d) ? existingMonthRange.to   : d.toISOString(),
+    };
     const labour = money(row['Labour Revenue']);
     const parts = money(row['Parts Revenue']);
     const lubes = money(row['Lubes Revenue']);

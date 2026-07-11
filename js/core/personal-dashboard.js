@@ -5,6 +5,7 @@ import { scheduleSave } from './store.js';
 import { ensureMonth, hrFor } from './months.js';
 import { calcBehavioral } from './behavioral.js';
 import { calcEarnedPerformance } from './incentive-engine.js';
+import { getJobCardBucket } from './job-card-data.js';
 import { getTeamMembers, linkedEmployee, isEmployee, canViewTab, currentUser, getRoleInfo, logout } from './auth.js';
 import { applyHiriseAlias } from './admin-tabs/employees.js';
 import { renderNav, switchTab } from './ui-shell.js';
@@ -12,6 +13,14 @@ import { currentRealMonthKey } from './boot.js';
 
 function startRealtimeSync() {
   // No-op — app uses scheduleSave/Supabase polling instead of push channels.
+}
+
+// Categories whose Achievement is sourced from the Job Card Log Sheet upload.
+const JOB_CARD_DRIVEN_CATEGORIES = ['TECHNICIAN', 'SUPERVISOR', 'NARODE', 'WM', 'SERVICE_MANAGER'];
+
+function fmtDMY(iso) {
+  const d = new Date(iso);
+  return String(d.getDate()).padStart(2, '0') + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + d.getFullYear();
 }
 
 // ── switchEmpTab ──────────────────────────────────────────────────────────
@@ -60,6 +69,8 @@ export function renderEmpDashboard(empId) {
   const behEarned = beh.earned||0;
   const totalIncentive = perfEarned + behEarned;
   const team = getTeamMembers(emp);
+  const jcBucket = JOB_CARD_DRIVEN_CATEGORIES.includes(emp.category) ? getJobCardBucket(mk) : null;
+  const jcDateRange = jcBucket && jcBucket.dateRange ? jcBucket.dateRange : null;
 
   panel.innerHTML =
     '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">' +
@@ -73,6 +84,10 @@ export function renderEmpDashboard(empId) {
       '</div>' +
       '<div style="font-size:12px;color:var(--ink-soft);">' + escapeHtml(m.label||mk) + '</div>' +
     '</div>' +
+
+    (jcDateRange ?
+      '<div class="kbd-note" style="margin:-10px 0 16px;">Data from: ' + fmtDMY(jcDateRange.from) + ' To ' + fmtDMY(jcDateRange.to) + '</div>'
+    : '') +
 
     // KPI cards (hidden for advisors — they get the SA KPI card)
     (emp.category !== 'ADVISOR' ?
