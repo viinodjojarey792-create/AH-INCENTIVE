@@ -1,25 +1,12 @@
 import { APP, DEFAULT_CATEGORY_RATES, DEFAULT_CATEGORY_ELIGIBILITY } from './state.js';
 import { monthLabelOf } from './utils.js';
 
-// Returns the most recent prior month's categoryRates/categoryEligibility,
-// so a new month inherits the last admin-set values rather than resetting.
-export function getPriorMonthCategorySettings(key) {
-  const keys = Object.keys(APP.months).filter(k => k < key).sort().reverse();
-  for (const pk of keys) {
-    const pm = APP.months[pk];
-    if (pm && (pm.categoryRates || pm.categoryEligibility)) {
-      return {
-        rates: pm.categoryRates ? { ...pm.categoryRates } : {},
-        elig: pm.categoryEligibility ? { ...pm.categoryEligibility } : {}
-      };
-    }
-  }
-  return null;
-}
+// Every new month starts from the fixed system defaults (never inherits the
+// previous month's admin-edited rates/eligibility) — an admin's change only
+// applies to the month they made it in.
 export function blankMonth(key) {
-  const prior = getPriorMonthCategorySettings(key);
-  const categoryRates = prior ? { ...DEFAULT_CATEGORY_RATES, ...prior.rates } : { ...DEFAULT_CATEGORY_RATES };
-  const categoryEligibility = prior ? { ...DEFAULT_CATEGORY_ELIGIBILITY, ...prior.elig } : { ...DEFAULT_CATEGORY_ELIGIBILITY };
+  const categoryRates = { ...DEFAULT_CATEGORY_RATES };
+  const categoryEligibility = { ...DEFAULT_CATEGORY_ELIGIBILITY };
   return {
     label: monthLabelOf(key),
     hr: {},          // empId -> {actualAbsentee, approvedLeaves, lateMarks, tobacco, hrRemark}
@@ -29,8 +16,8 @@ export function blankMonth(key) {
     complaintsMeta: { fileName: null, uploadedAt: null, unmatched: [] },
     jobCard: null,   // {byTech, byAdvisor, workshop, fileName, uploadedAt, monthLabel, unmatchedTech, unmatchedAdvisor}
     incentivePct: {}, // empId -> { CATEGORY: pctNumber }
-    categoryRates,       // per-category Incentive % — inherited from prior month, or system default
-    categoryEligibility, // per-category Eligibility % — inherited from prior month, or system default
+    categoryRates,       // per-category Incentive % — starts at system default each month
+    categoryEligibility, // per-category Eligibility % — starts at system default each month
     special: {
       wmTarget: APP.settings.defaultWmTarget,
       warranty: { fscTarget: 0, fscAchievement: 0, warrantyTarget: 0, warrantyAchievement: 0, flatAmount: APP.settings.warrantyFlatAmount, achieved: false, delayDays: 0, manager: '' },
@@ -46,8 +33,8 @@ export function blankMonth(key) {
 export function ensureMonth(key) {
   if (!APP.months[key]) APP.months[key] = blankMonth(key);
   const m = APP.months[key];
-  if (!m.categoryRates) m.categoryRates = (function(){ const p=getPriorMonthCategorySettings(key); return p ? { ...DEFAULT_CATEGORY_RATES, ...p.rates } : { ...DEFAULT_CATEGORY_RATES }; })();
-  if (!m.categoryEligibility) m.categoryEligibility = (function(){ const p=getPriorMonthCategorySettings(key); return p ? { ...DEFAULT_CATEGORY_ELIGIBILITY, ...p.elig } : { ...DEFAULT_CATEGORY_ELIGIBILITY }; })();
+  if (!m.categoryRates) m.categoryRates = { ...DEFAULT_CATEGORY_RATES };
+  if (!m.categoryEligibility) m.categoryEligibility = { ...DEFAULT_CATEGORY_ELIGIBILITY };
   if (!m.hrSheetMeta) m.hrSheetMeta = { fileName: null, uploadedAt: null, unmatched: [] };
   if (!m.tobaccoMeta) m.tobaccoMeta = { fileName: null, uploadedAt: null, unmatched: [] };
   if (!m.complaintsMeta) m.complaintsMeta = { fileName: null, uploadedAt: null, unmatched: [] };
