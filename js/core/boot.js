@@ -5,6 +5,7 @@ import { escapeHtml, toast, uid, monthKeyOf, monthLabelOf } from './utils.js';
 import { ensureMonth, sortedMonthKeys } from './months.js';
 import { ALL_TAB_PERMS, ALL_ACTION_PERMS } from './auth.js';
 import { ensureOldData } from './admin-tabs/rates-archive.js';
+import { DEFAULT_PROCESS_INFO_TEXT } from './admin-tabs/process-info.js';
 import { renderNav, openModal, closeModal, rerenderActiveTab } from './ui-shell.js';
 import { renderAuthGate } from './auth-ui.js';
 import { SEED_EMPLOYEES } from '../../data/seed-employees.js';
@@ -214,6 +215,7 @@ export async function bootWithFallback() {
   APP.oldData        = savedOldData;
   APP.reportingChain = savedReporting   || {};
   APP.customRoles    = await Store.getWithMigration('customRoles', []);
+  APP.processInfo    = await Store.getWithMigration('processInfo', null) || { text: DEFAULT_PROCESS_INFO_TEXT, updatedAt: null };
 
   // Seed default designations if this is a fresh install
   if (!APP.customRoles || APP.customRoles.length === 0) {

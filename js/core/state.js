@@ -8,7 +8,8 @@ export const APP = {
   oldData: null,
   jobCardArchive: null,
   reportingChain: {},
-  customRoles: []   // admin-created designations with custom permissions
+  customRoles: [],  // admin-created designations with custom permissions
+  processInfo: null // { text, updatedAt } — admin-editable "how the scheme works" page
 };
 // Session is intentionally NOT persisted to storage — every fresh load of the
 // artifact requires logging in again, since this is a shared browser-based tool.
@@ -57,6 +58,7 @@ export const TABS = [
   { id: 'dashboard',    label: 'Dashboard',             icon: '◆',  section: 'Overview' },
   { id: 'behavioral',   label: 'Behavioral Incentive',  icon: '✓',  section: 'Overview' },
   { id: 'performance',  label: 'Performance Incentive', icon: '▲',  section: 'Overview' },
+  { id: 'processinfo',  label: 'Process Info',          icon: '📖', section: 'Overview' },
   { id: 'customers',    label: 'Customers',             icon: '🏍', section: 'Database' },
   { id: 'employees',    label: 'Employees',             icon: '☰',  section: 'Database' },
   { id: 'reporting',    label: 'Reporting Structure',   icon: '⬡',  section: 'Database' },

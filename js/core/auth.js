@@ -25,6 +25,7 @@ export const ALL_TAB_PERMS = [
   { key:'dashboard',    label:'Dashboard',             group:'View' },
   { key:'behavioral',   label:'Behavioral Incentive',  group:'View' },
   { key:'performance',  label:'Performance Incentive', group:'View' },
+  { key:'processinfo',  label:'Process Info',          group:'View' },
   { key:'customers',    label:'Customers',             group:'View' },
   { key:'employees',    label:'Employees',             group:'View' },
   { key:'reporting',    label:'Reporting Structure',   group:'View' },

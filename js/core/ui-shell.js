@@ -12,6 +12,7 @@ import { renderEmployees, renderReportingTab, renderHiriseMapTab } from './admin
 import { renderRates, renderOldData } from './admin-tabs/rates-archive.js';
 import { renderUsers } from './admin-tabs/users.js';
 import { renderSettings } from './admin-tabs/settings.js';
+import { renderProcessInfo } from './admin-tabs/process-info.js';
 import { renderAttendance, renderComplaints } from './import-handlers.js';
 import { switchEmpTab } from './personal-dashboard.js';
 import { wireMonthControls } from './boot.js';
@@ -84,6 +85,7 @@ const TAB_SUBTITLES = {
   dashboard: 'Lean monthly summary — full breakdowns live on the Behavioral and Performance pages',
   behavioral: 'Leave, late mark, tobacco and complaint bifurcation for the selected month',
   performance: 'Target, achievement and incentive % bifurcation for the selected month',
+  processinfo: 'How each role\'s target, achievement and incentive are calculated',
   customers: 'Customer and vehicle database — search, add, and manage service history',
   employees: 'Manage the employee roster, categories and Hirise name aliases',
   reporting: 'Map every employee\'s reporting chain — who they report to at each level up to MD',
@@ -124,6 +126,7 @@ export function renderTab(id) {
   if      (id === 'dashboard')    renderDashboard();
   else if (id === 'behavioral')   renderBehavioralIncentive();
   else if (id === 'performance')  renderPerformanceIncentive();
+  else if (id === 'processinfo')  renderProcessInfo('tab-processinfo');
   else if (id === 'customers')    renderCustomers();
   else if (id === 'employees')    renderEmployees();
   else if (id === 'reporting')    renderReportingTab();
